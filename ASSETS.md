@@ -2,6 +2,8 @@
 
 This repository includes bundled avatar images under `public/avatars/`.
 
+The README demo files under `docs/assets/` are maintainer-provided screen recordings for this project.
+
 The initial bundled avatar assets were generated for this project by the maintainer and are distributed with this repository for use in agmsg-bubblelog. Before replacing or adding assets, make sure you have the right to redistribute them in a public repository.
 
 Recommended asset rules:

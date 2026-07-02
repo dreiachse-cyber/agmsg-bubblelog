@@ -11,3 +11,5 @@
 - Aligned right-side message avatars with the left-side avatar baseline.
 - Embedded minimal agmsg-compatible read logic with `node:sqlite`, removing the Git Bash/agmsg script dependency.
 - Added third-party notices for MIT-licensed agmsg portions.
+- Documented external agent billing responsibility and usage-credit checks.
+- Added README demo media with a GIF preview and MP4 source.

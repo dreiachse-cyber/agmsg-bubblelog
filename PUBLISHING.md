@@ -22,6 +22,7 @@ Use this before making the repository public.
 - [x] Confirm no private agmsg database, workspace logs, tokens, or account data are tracked.
 - [x] Confirm local project-ops files are ignored.
 - [x] Confirm generated avatar assets are intended for redistribution.
+- [x] Confirm README warns that external agent CLI billing and usage-credit settings are the user's responsibility.
 
 ## Validation
 
