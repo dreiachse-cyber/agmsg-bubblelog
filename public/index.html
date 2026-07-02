@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>agmsg-bubblelog</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <header class="brand">
+          <p>ローカルagmsgビューア</p>
+          <h1>Bubblelog</h1>
+        </header>
+
+        <section class="panel">
+          <h2>チーム</h2>
+          <div id="teamList" class="team-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>表示</h2>
+          <label class="field">
+            件数
+            <select id="limitSelect">
+              <option value="40">40</option>
+              <option value="80" selected>80</option>
+              <option value="160">160</option>
+              <option value="300">300</option>
+            </select>
+          </label>
+          <label class="toggle">
+            <input id="compactToggle" type="checkbox" checked>
+            コンパクト表示
+          </label>
+          <label class="toggle">
+            <input id="controlToggle" type="checkbox">
+            制御ログも表示
+          </label>
+        </section>
+      </aside>
+
+      <main class="chat-shell">
+        <header class="chat-header">
+          <div>
+            <p id="teamCaption">チーム未選択</p>
+            <h2 id="chatTitle">ログを選んでください</h2>
+          </div>
+          <button id="refreshButton" type="button">更新</button>
+        </header>
+
+        <section id="statusLine" class="status-line">agmsg のチーム一覧を読み込み中です。</section>
+        <section id="messageList" class="message-list" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

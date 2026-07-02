@@ -1,0 +1,355 @@
+:root {
+  color-scheme: light;
+  --bg: #e9efe8;
+  --panel: #f8fbf5;
+  --line: #d5dfd1;
+  --ink: #17211c;
+  --muted: #65736b;
+  --mine: #d8f5c9;
+  --other: #ffffff;
+  --center: #eef3ee;
+  --accent: #2f7d5b;
+  --warn: #b0612f;
+  --bad: #b84242;
+  --shadow: rgba(40, 56, 48, 0.14);
+  font-family: "Yu Gothic", "Meiryo", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(420px, 1fr);
+  height: 100vh;
+  min-height: 0;
+}
+
+.sidebar {
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: #f2f7ef;
+  padding: 18px;
+}
+
+.brand p {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.brand h1 {
+  margin: 0 0 18px;
+  font-size: 28px;
+  letter-spacing: 0;
+}
+
+.panel {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.team-list {
+  display: grid;
+  gap: 8px;
+}
+
+.team-button {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  padding: 8px 10px;
+}
+
+.team-button.active {
+  border-color: var(--accent);
+  background: #e3f3dc;
+}
+
+.team-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.team-agents {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.field,
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.field select {
+  min-width: 88px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px 8px;
+}
+
+.chat-shell {
+  display: grid;
+  grid-template-rows: 70px 38px 1fr;
+  min-width: 0;
+  min-height: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  background: rgba(248, 251, 245, 0.92);
+  padding: 12px 18px;
+}
+
+.chat-header p {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+#refreshButton {
+  min-width: 82px;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: #eef5eb;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 18px;
+}
+
+.message-list {
+  overflow: auto;
+  min-height: 0;
+  padding: 18px max(22px, calc((100vw - 980px) / 2));
+}
+
+.day-separator,
+.control-message {
+  max-width: 640px;
+  margin: 10px auto;
+  border-radius: 999px;
+  background: var(--center);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  padding: 7px 12px;
+}
+
+.message-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 560px);
+  gap: 8px;
+  align-items: end;
+  margin: 11px 0;
+}
+
+.message-row.mine {
+  grid-template-columns: minmax(0, 560px) 42px;
+  justify-content: end;
+}
+
+.message-row.mine .avatar {
+  grid-column: 2;
+}
+
+.message-row.mine .bubble-wrap {
+  grid-column: 1;
+  justify-self: end;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--avatar-color, #9fc9b5);
+  box-shadow: 0 4px 12px var(--shadow);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  position: relative;
+}
+
+.avatar::after {
+  content: attr(data-emotion);
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #fff5d7;
+  font-size: 11px;
+}
+
+.bubble-wrap {
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.message-row.mine .meta {
+  justify-content: flex-end;
+}
+
+.emotion {
+  border-radius: 999px;
+  background: #edf2ea;
+  padding: 2px 7px;
+}
+
+.bubble {
+  max-width: min(560px, 72vw);
+  border: 1px solid rgba(43, 64, 52, 0.08);
+  border-radius: 16px;
+  background: var(--other);
+  box-shadow: 0 5px 18px var(--shadow);
+  line-height: 1.55;
+  padding: 10px 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.message-row.mine .bubble {
+  background: var(--mine);
+}
+
+.message-row.warn .bubble {
+  border-color: rgba(176, 97, 47, 0.2);
+}
+
+.message-row.error .bubble {
+  border-color: rgba(184, 66, 66, 0.24);
+}
+
+.app-shell.compact .message-list {
+  padding-top: 12px;
+}
+
+.app-shell.compact .message-row {
+  grid-template-columns: 34px minmax(0, 560px);
+  margin: 7px 0;
+}
+
+.app-shell.compact .message-row.mine {
+  grid-template-columns: minmax(0, 560px) 34px;
+}
+
+.app-shell.compact .avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.app-shell.compact .bubble {
+  padding: 8px 11px;
+  border-radius: 14px;
+  font-size: 14px;
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sidebar {
+    max-height: 220px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .chat-shell {
+    grid-template-rows: 64px 34px minmax(0, 1fr);
+  }
+
+  .chat-header {
+    padding: 10px 12px;
+  }
+
+  .status-line {
+    padding: 0 12px;
+  }
+
+  .message-list {
+    padding: 12px;
+  }
+}

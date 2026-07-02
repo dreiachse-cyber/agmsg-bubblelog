@@ -1,0 +1,23 @@
+{
+  "name": "agmsg-bubblelog",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "A local messenger-style viewer for agmsg team logs.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "check": "node --check server.mjs && node --check public/app.js"
+  },
+  "keywords": [
+    "agmsg",
+    "agent",
+    "chat",
+    "log-viewer",
+    "local-first"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}
