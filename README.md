@@ -53,6 +53,24 @@ C:\Program Files\Git\bin\bash.exe
   - 通常
 - `ctrl:` から始まる制御ログは通常非表示にする。
 
+## エージェントアイコン
+
+画像は `public/avatars/` に置き、`public/agent-icons.json` でエージェント名に紐づけます。
+
+```json
+{
+  "agents": {
+    "codex-impl": "./avatars/codex.png",
+    "claude-review": {
+      "src": "./avatars/claude.png",
+      "label": "Claude"
+    }
+  }
+}
+```
+
+未設定のエージェントは、これまで通り名前の頭文字アイコンで表示します。
+
 ## しないこと
 
 - agmsg メッセージ送信はしない。

@@ -2,6 +2,7 @@ const state = {
   teams: [],
   selectedTeam: "",
   entries: [],
+  agentIcons: {},
   showControls: false,
   compact: true,
   limit: 80,
@@ -85,7 +86,7 @@ function formatTime(value) {
 }
 
 async function fetchJson(path) {
-  const response = await fetch(path);
+  const response = await fetch(path, { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
   return data;
@@ -105,17 +106,50 @@ function thinkingAgentName(visibleEntries) {
   return selectedTeam()?.agents?.[0]?.name || "AI";
 }
 
+function agentIconConfig(name) {
+  const exact = state.agentIcons[name];
+  if (exact) return typeof exact === "string" ? { src: exact } : exact;
+
+  const lowerName = name.toLowerCase();
+  const matched = Object.entries(state.agentIcons).find(([key]) => key.toLowerCase() === lowerName);
+  if (!matched) return null;
+  return typeof matched[1] === "string" ? { src: matched[1] } : matched[1];
+}
+
+function createAvatar(agentName, emotion) {
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.style.setProperty("--avatar-color", avatarColor(agentName));
+  avatar.dataset.emotion = emotion.icon;
+  avatar.title = `${agentName} / ${emotion.label}`;
+
+  const icon = agentIconConfig(agentName);
+  const src = icon?.src || icon?.icon;
+  if (src) {
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = icon?.label || agentName;
+    image.loading = "lazy";
+    image.addEventListener("error", () => {
+      avatar.classList.remove("has-image");
+      image.remove();
+      avatar.textContent = agentInitial(agentName);
+    });
+    avatar.classList.add("has-image");
+    avatar.appendChild(image);
+  } else {
+    avatar.textContent = agentInitial(agentName);
+  }
+
+  return avatar;
+}
+
 function appendThinkingIndicator(agentName) {
   const row = document.createElement("article");
   row.className = "message-row thinking other";
   row.setAttribute("aria-label", `${agentName} が考え中`);
 
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.style.setProperty("--avatar-color", avatarColor(agentName));
-  avatar.dataset.emotion = "…";
-  avatar.title = `${agentName} / 考え中`;
-  avatar.textContent = agentInitial(agentName);
+  const avatar = createAvatar(agentName, { icon: "…", label: "考え中" });
 
   const wrap = document.createElement("div");
   wrap.className = "bubble-wrap";
@@ -225,12 +259,7 @@ function renderMessages() {
     const row = document.createElement("article");
     row.className = `message-row ${mine ? "mine" : "other"} ${emotion.className}`;
 
-    const avatar = document.createElement("div");
-    avatar.className = "avatar";
-    avatar.style.setProperty("--avatar-color", avatarColor(entry.fromAgent));
-    avatar.dataset.emotion = emotion.icon;
-    avatar.title = `${entry.fromAgent} / ${emotion.label}`;
-    avatar.textContent = agentInitial(entry.fromAgent);
+    const avatar = createAvatar(entry.fromAgent, emotion);
 
     const wrap = document.createElement("div");
     wrap.className = "bubble-wrap";
@@ -258,6 +287,15 @@ function renderMessages() {
   }
 
   els.messageList.scrollTop = els.messageList.scrollHeight;
+}
+
+async function loadAgentIcons() {
+  try {
+    const data = await fetchJson("/agent-icons.json");
+    state.agentIcons = data.agents || {};
+  } catch {
+    state.agentIcons = {};
+  }
 }
 
 async function loadTeams() {
@@ -294,6 +332,7 @@ async function loadHistory() {
 
 async function refreshAll() {
   try {
+    await loadAgentIcons();
     await loadTeams();
     await loadHistory();
   } catch (error) {
