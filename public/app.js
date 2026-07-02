@@ -5,6 +5,8 @@ const state = {
   showControls: false,
   compact: true,
   limit: 80,
+  loadingTeams: false,
+  loadingHistory: false,
 };
 
 const els = {
@@ -93,6 +95,60 @@ function setStatus(text) {
   els.statusLine.textContent = text;
 }
 
+function selectedTeam() {
+  return state.teams.find((team) => team.name === state.selectedTeam);
+}
+
+function thinkingAgentName(visibleEntries) {
+  const lastMessage = visibleEntries.at(-1);
+  if (lastMessage?.toAgent) return lastMessage.toAgent;
+  return selectedTeam()?.agents?.[0]?.name || "AI";
+}
+
+function appendThinkingIndicator(agentName) {
+  const row = document.createElement("article");
+  row.className = "message-row thinking other";
+  row.setAttribute("aria-label", `${agentName} が考え中`);
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.style.setProperty("--avatar-color", avatarColor(agentName));
+  avatar.dataset.emotion = "…";
+  avatar.title = `${agentName} / 考え中`;
+  avatar.textContent = agentInitial(agentName);
+
+  const wrap = document.createElement("div");
+  wrap.className = "bubble-wrap";
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.textContent = `${agentName} · 考え中 `;
+
+  const tag = document.createElement("span");
+  tag.className = "emotion thinking-label";
+  tag.textContent = "思考中";
+  meta.appendChild(tag);
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble thinking-bubble";
+
+  const loader = document.createElement("span");
+  loader.className = "thinking-loader";
+  loader.setAttribute("aria-hidden", "true");
+  for (let index = 0; index < 3; index += 1) {
+    loader.appendChild(document.createElement("span"));
+  }
+
+  const text = document.createElement("span");
+  text.className = "thinking-text";
+  text.textContent = "応答を待っています";
+
+  bubble.append(loader, text);
+  wrap.append(meta, bubble);
+  row.append(avatar, wrap);
+  els.messageList.appendChild(row);
+}
+
 function renderTeams() {
   els.teamList.replaceChildren();
   if (!state.teams.length) {
@@ -124,6 +180,8 @@ function renderTeams() {
 
 function renderMessages() {
   els.shell.classList.toggle("compact", state.compact);
+  els.shell.classList.toggle("loading", state.loadingTeams || state.loadingHistory);
+  els.messageList.setAttribute("aria-busy", state.loadingHistory ? "true" : "false");
   els.messageList.replaceChildren();
   els.teamCaption.textContent = state.selectedTeam ? `チーム: ${state.selectedTeam}` : "チーム未選択";
   els.chatTitle.textContent = state.selectedTeam ? "agmsg 会話ログ" : "ログを選んでください";
@@ -132,7 +190,7 @@ function renderMessages() {
     (entry) => state.showControls || !entry.body.startsWith("ctrl:"),
   );
 
-  if (!visibleEntries.length) {
+  if (!visibleEntries.length && !state.loadingHistory) {
     const empty = document.createElement("div");
     empty.className = "control-message";
     empty.textContent = state.selectedTeam
@@ -195,10 +253,16 @@ function renderMessages() {
     els.messageList.appendChild(row);
   }
 
+  if (state.loadingHistory) {
+    appendThinkingIndicator(thinkingAgentName(visibleEntries));
+  }
+
   els.messageList.scrollTop = els.messageList.scrollHeight;
 }
 
 async function loadTeams() {
+  state.loadingTeams = true;
+  renderMessages();
   setStatus("agmsg チームを読み込み中です。");
   const data = await fetchJson("/api/teams");
   state.teams = data.teams || [];
@@ -207,6 +271,7 @@ async function loadTeams() {
       state.teams.find((team) => team.name.includes("npc-side-battle-probe"))?.name ||
       state.teams[0].name;
   }
+  state.loadingTeams = false;
   renderTeams();
 }
 
@@ -215,11 +280,14 @@ async function loadHistory() {
     renderMessages();
     return;
   }
+  state.loadingHistory = true;
+  renderMessages();
   setStatus(`${state.selectedTeam} の履歴を読み込み中です。`);
   const data = await fetchJson(
     `/api/history?team=${encodeURIComponent(state.selectedTeam)}&limit=${state.limit}`,
   );
   state.entries = data.entries || [];
+  state.loadingHistory = false;
   setStatus(`${state.entries.length} 件を表示中。すべてローカルで読み込んでいます。`);
   renderMessages();
 }
@@ -229,6 +297,9 @@ async function refreshAll() {
     await loadTeams();
     await loadHistory();
   } catch (error) {
+    state.loadingTeams = false;
+    state.loadingHistory = false;
+    renderMessages();
     setStatus(`読み込みに失敗しました: ${error.message}`);
   }
 }
