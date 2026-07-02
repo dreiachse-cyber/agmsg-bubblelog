@@ -320,11 +320,13 @@ select {
 
 .message-row.mine .avatar {
   grid-column: 2;
+  grid-row: 1;
   justify-self: end;
 }
 
 .message-row.mine .bubble-wrap {
   grid-column: 1;
+  grid-row: 1;
   justify-self: end;
 }
 
@@ -519,29 +521,6 @@ select {
   word-break: break-word;
 }
 
-.bubble-status {
-  position: absolute;
-  right: -7px;
-  bottom: -8px;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #fff5d7;
-  box-shadow: 0 4px 10px var(--shadow);
-  color: #6b5a21;
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.message-row.mine .bubble-status {
-  right: auto;
-  left: -7px;
-}
-
 .message-row.mine .bubble {
   background: var(--mine);
 }
@@ -569,11 +548,6 @@ select {
   gap: 10px;
   width: auto;
   color: var(--muted);
-}
-
-.thinking-bubble .bubble-status {
-  background: #e8f2ff;
-  color: #32638e;
 }
 
 .thinking-loader {

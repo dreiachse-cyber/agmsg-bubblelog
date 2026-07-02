@@ -364,12 +364,18 @@ function agentIconConfig(name, emotionKey = "neutral") {
   return resolveEmotionIcon(normalizeIconConfig(matched[1]), emotionKey);
 }
 
-function agentNameButton(agentName) {
+function agentModelLabel(agentName) {
+  const config = normalizeIconConfig(state.agentIcons[agentName]);
+  return config?.model || "";
+}
+
+function agentNameButton(agentName, options = {}) {
   const button = document.createElement("button");
+  const model = options.showModel ? agentModelLabel(agentName) : "";
   button.type = "button";
   button.className = "agent-name-button";
   button.dataset.agentName = agentName;
-  button.textContent = agentName;
+  button.textContent = model ? `${agentName} (${model})` : agentName;
   button.title = `${agentName} の顔アイコンを選ぶ`;
   return button;
 }
@@ -434,12 +440,7 @@ function appendThinkingIndicator(agentName) {
   text.className = "thinking-text";
   text.textContent = "応答を待っています";
 
-  const badge = document.createElement("span");
-  badge.className = "bubble-status";
-  badge.textContent = "…";
-  badge.title = "考え中";
-
-  bubble.append(loader, text, badge);
+  bubble.append(loader, text);
   wrap.append(meta, bubble);
   row.append(avatar, wrap);
   els.messageList.appendChild(row);
@@ -545,7 +546,7 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.appendChild(agentNameButton(entry.fromAgent));
+    meta.appendChild(agentNameButton(entry.fromAgent, { showModel: true }));
     meta.append(" → ");
     meta.appendChild(agentNameButton(entry.toAgent));
     meta.append(` · ${formatTime(entry.createdAt)} `);
@@ -558,12 +559,6 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.textContent = entry.body;
-
-    const badge = document.createElement("span");
-    badge.className = "bubble-status";
-    badge.textContent = emotion.icon;
-    badge.title = emotion.label;
-    bubble.appendChild(badge);
 
     wrap.append(meta, bubble);
     row.append(avatar, wrap);

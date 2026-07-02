@@ -26,6 +26,7 @@
     },
     "codex-nyan": {
       "label": "Codex Nyan",
+      "model": "GPT-5 Codex",
       "src": "./avatars/cat-neutral.png",
       "emotions": {
         "thinking": "./avatars/cat-thinking.png",
@@ -34,6 +35,32 @@
         "neutral": "./avatars/cat-neutral.png",
         "calm": "./avatars/cat-calm.png",
         "talk": "./avatars/cat-talk.png"
+      }
+    },
+    "claude-live": {
+      "label": "Claude Live",
+      "model": "opus 4.8",
+      "src": "./avatars/panda-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/panda-thinking.png",
+        "sad": "./avatars/panda-sad.png",
+        "happy": "./avatars/panda-happy.png",
+        "neutral": "./avatars/panda-neutral.png",
+        "calm": "./avatars/panda-calm.png",
+        "talk": "./avatars/panda-talk.png"
+      }
+    },
+    "claude-analyst": {
+      "label": "Claude Analyst",
+      "model": "opus 4.8",
+      "src": "./avatars/panda-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/panda-thinking.png",
+        "sad": "./avatars/panda-sad.png",
+        "happy": "./avatars/panda-happy.png",
+        "neutral": "./avatars/panda-neutral.png",
+        "calm": "./avatars/panda-calm.png",
+        "talk": "./avatars/panda-talk.png"
       }
     },
     "claude-director": {

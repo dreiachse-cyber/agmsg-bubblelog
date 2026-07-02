@@ -14,3 +14,6 @@
 - Documented external agent billing responsibility and usage-credit checks.
 - Added README demo media with a GIF preview and MP4 source.
 - Renamed visible app copy to Bubblelog-focused wording.
+- Aligned right-side avatars to the same grid row as their message bubbles.
+- Added optional model labels for sender metadata.
+- Removed small corner emotion badges from message bubbles.
