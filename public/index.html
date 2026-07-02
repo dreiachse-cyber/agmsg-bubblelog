@@ -11,19 +11,23 @@
     <div class="app-shell">
       <aside id="sidebar" class="sidebar">
         <header class="brand">
-          <p>ローカル会話ログビューア</p>
+          <p id="brandSubtitle">ローカル会話ログビューア</p>
           <h1>Bubblelog</h1>
         </header>
 
         <section class="panel">
-          <h2>チーム</h2>
+          <h2 id="teamPanelTitle">チーム</h2>
           <div id="teamList" class="team-list"></div>
         </section>
 
         <section class="panel">
-          <h2>表示</h2>
+          <h2 id="displayPanelTitle">表示</h2>
           <label class="field">
-            件数
+            <span id="languageLabel">言語</span>
+            <select id="languageSelect"></select>
+          </label>
+          <label class="field">
+            <span id="limitLabel">件数</span>
             <select id="limitSelect">
               <option value="40">40</option>
               <option value="80" selected>80</option>
@@ -33,11 +37,11 @@
           </label>
           <label class="toggle">
             <input id="compactToggle" type="checkbox" checked>
-            コンパクト表示
+            <span id="compactLabel">コンパクト表示</span>
           </label>
           <label class="toggle">
             <input id="controlToggle" type="checkbox">
-            制御ログも表示
+            <span id="controlLabel">制御ログも表示</span>
           </label>
         </section>
       </aside>

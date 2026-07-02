@@ -17,3 +17,4 @@
 - Aligned right-side avatars to the same grid row as their message bubbles.
 - Added optional model labels for sender metadata.
 - Removed small corner emotion badges from message bubbles.
+- Added a 15-language UI selector while keeping log message bodies unchanged.

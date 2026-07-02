@@ -173,6 +173,10 @@ select {
   padding: 5px 8px;
 }
 
+#languageSelect {
+  max-width: 150px;
+}
+
 .chat-shell {
   display: grid;
   grid-template-rows: 70px 38px 1fr;
