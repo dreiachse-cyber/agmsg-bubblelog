@@ -93,7 +93,28 @@ C:\Program Files\Git\bin\bash.exe
 
 `要注意` と `警戒` は `sad`、`質問` と考え中表示は `thinking`、`完了` は `happy`、`レビュー` と `待機` は `calm` に寄せて表示します。
 
-同梱の切り出し済みアイコンは `bear`、`dog`、`frog`、`gray-koala`、`lion`、`lowpoly-lion`、`panda`、`pig`、`rabbit`、`white-koala` の10種類です。
+同梱の切り出し済みアイコンは `bear`、`dog`、`frog`、`gray-koala`、`lion`、`lowpoly-lion`、`panda`、`pig`、`rabbit`、`slime`、`white-koala` の11種類です。
+
+`slime` を割り当てる場合の例:
+
+```json
+{
+  "agents": {
+    "claude-review": {
+      "label": "Claude",
+      "src": "./avatars/slime-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/slime-thinking.png",
+        "sad": "./avatars/slime-sad.png",
+        "happy": "./avatars/slime-happy.png",
+        "neutral": "./avatars/slime-neutral.png",
+        "calm": "./avatars/slime-calm.png",
+        "talk": "./avatars/slime-talk.png"
+      }
+    }
+  }
+}
+```
 
 ## しないこと
 
