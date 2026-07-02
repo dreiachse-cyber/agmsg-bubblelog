@@ -1,7 +1,8 @@
-import { execFile } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -10,15 +11,13 @@ const publicRoot = resolve(publicDir);
 const port = Number(process.env.PORT || 8787);
 const host = process.env.HOST || "127.0.0.1";
 const projectPath = process.env.AGMSG_PROJECT || process.cwd();
-const commandCwd = process.cwd();
+const agentType = process.env.AGMSG_AGENT_TYPE || "codex";
 const homeDir = process.env.HOME || process.env.USERPROFILE || "";
-const scriptDir =
-  process.env.AGMSG_SCRIPT_DIR || join(homeDir, ".agents", "skills", "agmsg", "scripts");
-const gitBashPath = "C:\\Program Files\\Git\\bin\\bash.exe";
-const bashCommand =
-  process.env.AGMSG_BASH && process.env.AGMSG_BASH !== "bash"
-    ? process.env.AGMSG_BASH
-    : gitBashPath;
+const agmsgRoot =
+  process.env.AGMSG_ROOT || process.env.AGMSG_SKILL_DIR || join(homeDir, ".agents", "skills", "agmsg");
+const teamsDir = process.env.AGMSG_TEAMS_DIR || join(agmsgRoot, "teams");
+const storageDir = process.env.AGMSG_STORAGE_PATH || join(agmsgRoot, "db");
+const dbPath = process.env.AGMSG_DB_PATH || join(storageDir, "messages.db");
 
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -26,6 +25,10 @@ const mimeTypes = new Map([
   [".js", "text/javascript; charset=utf-8"],
   [".json", "application/json; charset=utf-8"],
   [".svg", "image/svg+xml"],
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".webp", "image/webp"],
 ]);
 
 function sendJson(res, status, body) {
@@ -36,83 +39,126 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
-function runAgmsg(scriptName, args = []) {
-  return new Promise((resolve, reject) => {
-    const scriptPath = join(scriptDir, scriptName);
-    const isWindows = process.platform === "win32";
-    const command = isWindows ? bashCommand : scriptPath;
-    const commandArgs = isWindows ? [scriptPath.replaceAll("\\", "/"), ...args] : args;
+function readJsonFile(path) {
+  return JSON.parse(readFileSync(path, "utf8"));
+}
 
-    execFile(
-      command,
-      commandArgs,
-      {
-        cwd: commandCwd,
-        timeout: 8000,
-        env: { ...process.env, HOME: homeDir },
-      },
-      (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(stderr.trim() || error.message));
-          return;
-        }
-        resolve(stdout);
-      },
-    );
+function normalizeProjectForCompare(value) {
+  return String(value || "")
+    .trim()
+    .replaceAll("\\", "/")
+    .replace(/^\/([a-zA-Z])\//, (_, drive) => `${drive.toUpperCase()}:/`)
+    .replace(/\/+$/, "")
+    .toLowerCase();
+}
+
+function projectMatches(registrationProject, requestedProject) {
+  const registered = normalizeProjectForCompare(registrationProject);
+  const requested = normalizeProjectForCompare(requestedProject);
+  if (!registered || !requested) return false;
+  return requested === registered || requested.startsWith(`${registered}/`);
+}
+
+function validateTeamName(name) {
+  if (!name) throw new Error("team is required");
+  if (name === "." || name === ".." || name.startsWith("-") || /[/\\\u0000-\u001f\u007f]/.test(name)) {
+    throw new Error("invalid team name");
+  }
+}
+
+function registrationsForAgent(agent) {
+  if (Array.isArray(agent?.registrations)) return agent.registrations;
+  if (agent?.type || agent?.project) {
+    return [{ type: agent.type || "unknown", project: agent.project || "" }];
+  }
+  return [];
+}
+
+function readTeamConfig(configPath, folderName) {
+  const config = readJsonFile(configPath);
+  const agents = Object.entries(config.agents || {}).map(([name, agent]) => {
+    const registrations = registrationsForAgent(agent);
+    const types = [...new Set(registrations.map((item) => item.type).filter(Boolean))];
+    const latest = registrations.at(-1) || {};
+    return {
+      name,
+      type: types.join(",") || "unknown",
+      project: latest.project || "?",
+      registrations,
+    };
   });
+
+  return {
+    name: config.name || folderName,
+    agents,
+  };
 }
 
-function parseKeyValueLine(line) {
-  const pairs = new Map();
-  for (const part of line.trim().split(/\s+/)) {
-    const index = part.indexOf("=");
-    if (index > 0) pairs.set(part.slice(0, index), part.slice(index + 1));
-  }
-  return pairs;
-}
-
-function parseTeamsFromWhoami(output) {
-  const pairs = parseKeyValueLine(output.split("\n")[0] || "");
-  const raw = pairs.get("teams") || pairs.get("available_teams") || "";
-  if (!raw || raw === "none") return [];
-  return raw
-    .split(",")
-    .map((team) => team.trim())
-    .filter(Boolean)
-    .map((name) => ({ name }));
-}
-
-function parseTeamAgents(output) {
-  return output
-    .split("\n")
-    .map((line) => {
-      const match = line.match(/^\s{2}(.+?)\s+\((.+?)\)\s+—\s+(.+)$/);
-      if (!match) return null;
-      return {
-        name: match[1],
-        type: match[2],
-        project: match[3],
-      };
+// The state layout and read queries below are adapted from fujibee/agmsg's MIT-licensed scripts.
+function readAllTeams() {
+  if (!existsSync(teamsDir)) return [];
+  return readdirSync(teamsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const configPath = join(teamsDir, entry.name, "config.json");
+      if (!existsSync(configPath)) return null;
+      try {
+        return readTeamConfig(configPath, entry.name);
+      } catch {
+        return null;
+      }
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name, "ja"));
 }
 
-function parseHistory(output, team) {
-  const records = [];
-  for (const line of output.split("\n")) {
-    const match = line.match(/^\s*([●○])\s+\[([^\]]+)\]\s+(.+?)\s+→\s+(.+?):\s+(.*)$/);
-    if (!match) continue;
-    records.push({
-      id: records.length + 1,
-      team,
-      read: match[1] === "○",
-      createdAt: match[2],
-      fromAgent: match[3],
-      toAgent: match[4],
-      body: match[5],
-    });
+function selectProjectTeams(teams) {
+  const matching = teams.filter((team) =>
+    team.agents.some((agent) =>
+      agent.registrations.some(
+        (registration) =>
+          registration.type === agentType && projectMatches(registration.project, projectPath),
+      ),
+    ),
+  );
+  return matching.length ? matching : teams;
+}
+
+function openMessageDb() {
+  if (!existsSync(dbPath)) return null;
+  return new DatabaseSync(dbPath, { readOnly: true });
+}
+
+function readHistory(team, limit) {
+  validateTeamName(team);
+  const db = openMessageDb();
+  if (!db) return [];
+
+  try {
+    const rows = db
+      .prepare(
+        `SELECT
+           rowid AS id,
+           team,
+           from_agent AS fromAgent,
+           to_agent AS toAgent,
+           body,
+           created_at AS createdAt,
+           CASE WHEN read_at IS NULL THEN 0 ELSE 1 END AS read
+         FROM messages
+         WHERE team = ?
+         ORDER BY created_at DESC
+         LIMIT ?`,
+      )
+      .all(team, limit);
+
+    return rows.reverse().map((row) => ({
+      ...row,
+      read: Boolean(row.read),
+    }));
+  } finally {
+    db.close();
   }
-  return records;
 }
 
 async function handleApi(req, res, url) {
@@ -120,26 +166,19 @@ async function handleApi(req, res, url) {
     if (url.pathname === "/api/health") {
       sendJson(res, 200, {
         ok: true,
+        source: "embedded-agmsg",
         projectPath,
-        scriptDir,
+        agentType,
+        agmsgRoot,
+        teamsDir,
+        dbPath,
       });
       return;
     }
 
     if (url.pathname === "/api/teams") {
-      const whoami = await runAgmsg("whoami.sh", [projectPath, "codex"]);
-      const teams = parseTeamsFromWhoami(whoami);
-      const detailed = await Promise.all(
-        teams.map(async (team) => {
-          try {
-            const output = await runAgmsg("team.sh", [team.name]);
-            return { ...team, agents: parseTeamAgents(output) };
-          } catch {
-            return { ...team, agents: [] };
-          }
-        }),
-      );
-      sendJson(res, 200, { source: "agmsg", teams: detailed });
+      const teams = selectProjectTeams(readAllTeams());
+      sendJson(res, 200, { source: "embedded-agmsg", teams });
       return;
     }
 
@@ -150,12 +189,8 @@ async function handleApi(req, res, url) {
         return;
       }
       const limit = Math.max(1, Math.min(300, Number(url.searchParams.get("limit") || 120)));
-      const teamOutput = await runAgmsg("team.sh", [team]);
-      const agents = parseTeamAgents(teamOutput);
-      const reader = agents[0]?.name || "";
-      const output = await runAgmsg("history.sh", [team, reader]);
-      const entries = parseHistory(output, team).slice(-limit);
-      sendJson(res, 200, { source: "agmsg", team, reader, entries });
+      const entries = readHistory(team, limit);
+      sendJson(res, 200, { source: "embedded-agmsg", team, entries });
       return;
     }
 
@@ -208,4 +243,5 @@ const server = createServer(async (req, res) => {
 server.listen(port, host, () => {
   console.log(`agmsg-bubblelog を起動しました: http://${host}:${port}/`);
   console.log(`対象プロジェクト: ${projectPath}`);
+  console.log(`agmsg state: ${agmsgRoot}`);
 });

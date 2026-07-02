@@ -27,13 +27,14 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "files": [
     "server.mjs",
     "public",
     "README.md",
     "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "SECURITY.md",

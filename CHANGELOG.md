@@ -9,3 +9,5 @@
 - Added OSS readiness files and CI check workflow.
 - Added a `/demo` capture route with looping fake messages that never reads real agmsg history.
 - Aligned right-side message avatars with the left-side avatar baseline.
+- Embedded minimal agmsg-compatible read logic with `node:sqlite`, removing the Git Bash/agmsg script dependency.
+- Added third-party notices for MIT-licensed agmsg portions.

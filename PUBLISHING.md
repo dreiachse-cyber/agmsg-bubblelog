@@ -15,7 +15,7 @@ Use this before making the repository public.
 
 - [x] Update `package.json` with the final `repository`, `homepage`, and `bugs` URLs.
 - [x] Confirm `README.md` describes the supported platform and setup.
-- [x] Confirm `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, and `ASSETS.md` are present.
+- [x] Confirm `LICENSE`, `THIRD_PARTY_NOTICES.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, and `ASSETS.md` are present.
 
 ## Privacy
 

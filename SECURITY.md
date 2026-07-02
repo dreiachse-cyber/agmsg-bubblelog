@@ -12,4 +12,4 @@ Do not include real agmsg databases, private logs, API keys, tokens, payment dat
 
 ## Local-First Boundary
 
-agmsg-bubblelog is intended to read local agmsg output through agmsg scripts. It should not transmit logs to external services.
+agmsg-bubblelog reads local agmsg team config files and `messages.db` in read-only mode. It should not write agmsg state or transmit logs to external services.
