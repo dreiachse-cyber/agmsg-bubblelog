@@ -66,6 +66,11 @@ select {
   pointer-events: none;
 }
 
+.app-shell.demo-mode .status-line {
+  background: #eef8f4;
+  color: #285c4a;
+}
+
 .brand p {
   margin: 0 0 4px;
   color: var(--muted);
@@ -315,6 +320,7 @@ select {
 
 .message-row.mine .avatar {
   grid-column: 2;
+  justify-self: end;
 }
 
 .message-row.mine .bubble-wrap {
@@ -335,6 +341,7 @@ select {
   font-size: 28px;
   font-weight: 900;
   position: relative;
+  justify-self: start;
 }
 
 .avatar.has-image {

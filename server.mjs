@@ -168,8 +168,9 @@ async function handleApi(req, res, url) {
 }
 
 async function serveStatic(req, res, url) {
+  const appRoute = url.pathname === "/" || url.pathname === "/demo" || url.pathname === "/demo/";
   const requestedPath =
-    url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname).replace(/^[/\\]+/, "");
+    appRoute ? "index.html" : decodeURIComponent(url.pathname).replace(/^[/\\]+/, "");
   const safePath = normalize(requestedPath);
   if (safePath === ".." || safePath.startsWith(`..${sep}`)) {
     res.writeHead(403);

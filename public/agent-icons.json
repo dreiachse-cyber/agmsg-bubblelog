@@ -23,6 +23,42 @@
         "calm": "./avatars/panda-calm.png",
         "talk": "./avatars/panda-talk.png"
       }
+    },
+    "codex-nyan": {
+      "label": "Codex Nyan",
+      "src": "./avatars/cat-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/cat-thinking.png",
+        "sad": "./avatars/cat-sad.png",
+        "happy": "./avatars/cat-happy.png",
+        "neutral": "./avatars/cat-neutral.png",
+        "calm": "./avatars/cat-calm.png",
+        "talk": "./avatars/cat-talk.png"
+      }
+    },
+    "claude-director": {
+      "label": "Claude Director",
+      "src": "./avatars/panda-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/panda-thinking.png",
+        "sad": "./avatars/panda-sad.png",
+        "happy": "./avatars/panda-happy.png",
+        "neutral": "./avatars/panda-neutral.png",
+        "calm": "./avatars/panda-calm.png",
+        "talk": "./avatars/panda-talk.png"
+      }
+    },
+    "gemini-qa": {
+      "label": "Gemini QA",
+      "src": "./avatars/frog-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/frog-thinking.png",
+        "sad": "./avatars/frog-sad.png",
+        "happy": "./avatars/frog-happy.png",
+        "neutral": "./avatars/frog-neutral.png",
+        "calm": "./avatars/frog-calm.png",
+        "talk": "./avatars/frog-talk.png"
+      }
     }
   }
 }

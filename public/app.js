@@ -1,5 +1,67 @@
 const avatarOverridesKey = "agmsg-bubblelog-avatar-overrides";
 const avatarExpressionNames = ["thinking", "sad", "happy", "neutral", "calm", "talk"];
+const urlParams = new URLSearchParams(window.location.search);
+const isDemoMode =
+  window.location.pathname === "/demo" ||
+  window.location.pathname === "/demo/" ||
+  urlParams.get("demo") === "1";
+const demoTeamName = "demo-x-capture";
+const demoAgents = [
+  { name: "claude-director", type: "claude", project: "demo" },
+  { name: "codex-nyan", type: "codex", project: "demo" },
+  { name: "gemini-qa", type: "gemini", project: "demo" },
+];
+const demoScript = [
+  {
+    fromAgent: "claude-director",
+    toAgent: "codex-nyan",
+    body: "撮影用のデモを開始します。本物のagmsg履歴は読みません。",
+    emotion: "waiting",
+  },
+  {
+    fromAgent: "codex-nyan",
+    toAgent: "claude-director",
+    body: "了解ニャ。架空チームだけで吹き出しを再生するニャ。",
+    emotion: "good",
+  },
+  {
+    fromAgent: "gemini-qa",
+    toAgent: "codex-nyan",
+    body: "確認ポイント: 左カラムを閉じても会話幅が安定、横スクロールなし。",
+    emotion: "review",
+  },
+  {
+    fromAgent: "codex-nyan",
+    toAgent: "gemini-qa",
+    body: "右側の顔アイコンも左側と同じ基準線に揃えたニャ。",
+    emotion: "good",
+  },
+  {
+    fromAgent: "claude-director",
+    toAgent: "codex-nyan",
+    body: "新着はLINE風に、下を見ている時だけ自動追従。途中を読んでいる時はボタンで知らせます。",
+    emotion: "question",
+  },
+  {
+    fromAgent: "codex-nyan",
+    toAgent: "claude-director",
+    body: "X用の録画はこの /demo だけ映せば安全ニャ。",
+    emotion: "good",
+  },
+  {
+    fromAgent: "gemini-qa",
+    toAgent: "claude-director",
+    body: "OK。デモデータのみ表示、API履歴は未取得です。",
+    emotion: "review",
+  },
+  {
+    fromAgent: "codex-nyan",
+    toAgent: "gemini-qa",
+    body: "撮影準備完了ニャ。もう一周、自動で再生するニャ。",
+    emotion: "good",
+  },
+];
+let demoTimerId = 0;
 
 const state = {
   teams: [],
@@ -16,6 +78,8 @@ const state = {
   loadingHistory: false,
   sidebarCollapsed: localStorage.getItem("agmsg-bubblelog-sidebar") === "collapsed",
   unreadCount: 0,
+  demoCursor: 0,
+  demoThinkingAgent: "",
 };
 
 const els = {
@@ -102,6 +166,14 @@ function detectEmotion(body) {
   );
 }
 
+function emotionForEntry(entry) {
+  if (entry.emotion) {
+    const explicit = emotionRules.find((rule) => rule.key === entry.emotion);
+    if (explicit) return explicit;
+  }
+  return detectEmotion(entry.body);
+}
+
 function formatTime(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -178,9 +250,82 @@ function selectedTeam() {
 }
 
 function thinkingAgentName(visibleEntries) {
+  if (state.demoThinkingAgent) return state.demoThinkingAgent;
   const lastMessage = visibleEntries.at(-1);
   if (lastMessage?.toAgent) return lastMessage.toAgent;
   return selectedTeam()?.agents?.[0]?.name || "AI";
+}
+
+function demoTimestamp(index) {
+  const minute = String(40 + index).padStart(2, "0");
+  return `2026-07-02T09:${minute}:00Z`;
+}
+
+function buildDemoEntry(item, index) {
+  return {
+    id: `demo-${index + 1}`,
+    team: demoTeamName,
+    read: true,
+    createdAt: demoTimestamp(index),
+    fromAgent: item.fromAgent,
+    toAgent: item.toAgent,
+    body: item.body,
+    emotion: item.emotion,
+  };
+}
+
+function clearDemoTimer() {
+  if (!demoTimerId) return;
+  window.clearTimeout(demoTimerId);
+  demoTimerId = 0;
+}
+
+function scheduleDemoStep() {
+  if (!isDemoMode) return;
+  clearDemoTimer();
+
+  if (state.demoCursor >= demoScript.length) {
+    state.loadingHistory = false;
+    state.demoThinkingAgent = "";
+    renderMessages({ scrollMode: "bottom" });
+    setStatus("デモ再生が完了しました。数秒後にもう一度流します。");
+    demoTimerId = window.setTimeout(resetDemoPlayback, 2600);
+    return;
+  }
+
+  const next = demoScript[state.demoCursor];
+  state.loadingHistory = true;
+  state.demoThinkingAgent = next.fromAgent;
+  renderMessages({ scrollMode: "bottom" });
+  setStatus(`${next.fromAgent} が考え中です。デモデータだけを表示しています。`);
+
+  demoTimerId = window.setTimeout(() => {
+    const entry = buildDemoEntry(next, state.demoCursor);
+    state.entries = [...state.entries, entry];
+    state.demoCursor += 1;
+    state.loadingHistory = false;
+    state.demoThinkingAgent = "";
+    state.unreadCount = 0;
+    renderMessages({ scrollMode: "bottom" });
+    setStatus(`${state.entries.length} / ${demoScript.length} 件を再生中です。本物のagmsg履歴は読みません。`);
+    demoTimerId = window.setTimeout(scheduleDemoStep, 1100);
+  }, 900);
+}
+
+function resetDemoPlayback() {
+  clearDemoTimer();
+  state.teams = [{ name: demoTeamName, agents: demoAgents }];
+  state.selectedTeam = demoTeamName;
+  state.entries = [];
+  state.unreadCount = 0;
+  state.demoCursor = 0;
+  state.demoThinkingAgent = "";
+  state.loadingTeams = false;
+  state.loadingHistory = false;
+  renderTeams();
+  renderMessages({ scrollMode: "bottom" });
+  setStatus("撮影用デモを再生します。本物のagmsg履歴は読みません。");
+  demoTimerId = window.setTimeout(scheduleDemoStep, 500);
 }
 
 function normalizeIconConfig(value) {
@@ -341,11 +486,17 @@ function renderTeams() {
 
 function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messageList.scrollTop } = {}) {
   els.shell.classList.toggle("compact", state.compact);
+  els.shell.classList.toggle("demo-mode", isDemoMode);
   els.shell.classList.toggle("loading", state.loadingTeams || state.loadingHistory);
   els.messageList.setAttribute("aria-busy", state.loadingHistory ? "true" : "false");
   els.messageList.replaceChildren();
-  els.teamCaption.textContent = state.selectedTeam ? `チーム: ${state.selectedTeam}` : "チーム未選択";
-  els.chatTitle.textContent = state.selectedTeam ? "agmsg 会話ログ" : "ログを選んでください";
+  if (isDemoMode) {
+    els.teamCaption.textContent = `デモ: ${state.selectedTeam || demoTeamName}`;
+    els.chatTitle.textContent = "撮影用デモログ";
+  } else {
+    els.teamCaption.textContent = state.selectedTeam ? `チーム: ${state.selectedTeam}` : "チーム未選択";
+    els.chatTitle.textContent = state.selectedTeam ? "agmsg 会話ログ" : "ログを選んでください";
+  }
 
   const visibleEntries = state.entries.filter(
     (entry) => state.showControls || !entry.body.startsWith("ctrl:"),
@@ -381,7 +532,7 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
       continue;
     }
 
-    const emotion = detectEmotion(entry.body);
+    const emotion = emotionForEntry(entry);
     const mine = /codex/i.test(entry.fromAgent);
 
     const row = document.createElement("article");
@@ -519,6 +670,14 @@ async function selectTeam(teamName) {
 }
 
 async function loadTeams() {
+  if (isDemoMode) {
+    state.loadingTeams = false;
+    state.teams = [{ name: demoTeamName, agents: demoAgents }];
+    state.selectedTeam = demoTeamName;
+    renderTeams();
+    return;
+  }
+
   state.loadingTeams = true;
   renderMessages();
   setStatus("agmsg チームを読み込み中です。");
@@ -534,6 +693,11 @@ async function loadTeams() {
 }
 
 async function loadHistory({ silent = false } = {}) {
+  if (isDemoMode) {
+    resetDemoPlayback();
+    return;
+  }
+
   if (!state.selectedTeam) {
     renderMessages();
     return;
@@ -590,6 +754,10 @@ async function loadHistory({ silent = false } = {}) {
 async function refreshAll() {
   try {
     await loadAgentIcons();
+    if (isDemoMode) {
+      resetDemoPlayback();
+      return;
+    }
     await loadTeams();
     await loadHistory();
   } catch (error) {
@@ -680,6 +848,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 setInterval(() => {
+  if (isDemoMode) return;
   if (state.loadingTeams || state.loadingHistory || !state.selectedTeam) return;
   loadHistory({ silent: true }).catch((error) => {
     setStatus(`自動更新に失敗しました: ${error.message}`);
