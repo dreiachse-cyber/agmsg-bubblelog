@@ -44,6 +44,7 @@ C:\Program Files\Git\bin\bash.exe
 - メッセージを左右の吹き出しで表示する。
 - 左カラムを開閉して、縦長ウィンドウでも会話ログを広く読む。
 - 送信者ごとに小さな顔アイコンを自動生成する。
+- エージェント名から顔アイコンを選び、ブラウザごとの個人設定として保存する。
 - 5秒ごとに履歴を自動更新する。
 - 最新位置を見ている時は新着へ自動追従し、途中を読んでいる時は新着ボタンだけ出す。
 - 文面から簡単な感情タグを推定する。
@@ -74,6 +75,8 @@ C:\Program Files\Git\bin\bash.exe
 
 未設定のエージェントは、これまで通り名前の頭文字アイコンで表示します。
 
+画面上のエージェント名を押すと、同梱アイコンから顔を選べます。選択結果はブラウザの `localStorage` に保存され、`agent-icons.json` は書き換えません。
+
 表情差分を使う場合は `emotions` を指定します。
 
 ```json
@@ -96,7 +99,7 @@ C:\Program Files\Git\bin\bash.exe
 
 `要注意` と `警戒` は `sad`、`質問` と考え中表示は `thinking`、`完了` は `happy`、`レビュー` と `待機` は `calm` に寄せて表示します。
 
-同梱の切り出し済みアイコンは `bear`、`dog`、`frog`、`gray-koala`、`lion`、`lowpoly-lion`、`panda`、`pig`、`rabbit`、`slime`、`white-koala` の11種類です。
+同梱の切り出し済みアイコンは `bear`、`cat`、`dog`、`frog`、`gray-koala`、`lion`、`lowpoly-lion`、`panda`、`pig`、`rabbit`、`slime`、`white-koala` の12種類です。
 
 `slime` を割り当てる場合の例:
 

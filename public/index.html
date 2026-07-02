@@ -67,6 +67,22 @@
       </main>
     </div>
 
+    <div id="avatarModal" class="modal-backdrop" hidden>
+      <section class="avatar-modal" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
+        <header class="modal-header">
+          <div class="modal-title-block">
+            <p id="avatarModalAgent">agent</p>
+            <h2 id="avatarModalTitle">顔アイコン</h2>
+          </div>
+          <button id="avatarModalClose" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+        <div id="avatarGrid" class="avatar-grid"></div>
+        <footer class="modal-footer">
+          <button id="avatarResetButton" class="text-button" type="button">標準に戻す</button>
+        </footer>
+      </section>
+    </div>
+
     <script src="./app.js"></script>
   </body>
 </html>

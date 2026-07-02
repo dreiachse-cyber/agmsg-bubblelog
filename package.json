@@ -4,6 +4,14 @@
   "private": false,
   "type": "module",
   "description": "A local messenger-style viewer for agmsg team logs.",
+  "homepage": "https://github.com/dreiachse-cyber/agmsg-bubblelog#readme",
+  "bugs": {
+    "url": "https://github.com/dreiachse-cyber/agmsg-bubblelog/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dreiachse-cyber/agmsg-bubblelog.git"
+  },
   "scripts": {
     "start": "node server.mjs",
     "dev": "node server.mjs",

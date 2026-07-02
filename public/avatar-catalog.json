@@ -1,0 +1,16 @@
+{
+  "sets": [
+    { "key": "bear", "label": "Bear" },
+    { "key": "cat", "label": "Cat" },
+    { "key": "dog", "label": "Dog" },
+    { "key": "frog", "label": "Frog" },
+    { "key": "gray-koala", "label": "Gray koala" },
+    { "key": "lion", "label": "Lion" },
+    { "key": "lowpoly-lion", "label": "Lowpoly lion" },
+    { "key": "panda", "label": "Panda" },
+    { "key": "pig", "label": "Pig" },
+    { "key": "rabbit", "label": "Rabbit" },
+    { "key": "slime", "label": "Slime" },
+    { "key": "white-koala", "label": "White koala" }
+  ]
+}

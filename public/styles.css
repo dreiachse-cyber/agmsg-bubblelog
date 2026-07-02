@@ -99,6 +99,7 @@ select {
 }
 
 .team-button {
+  display: block;
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--line);
@@ -129,6 +130,22 @@ select {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.agent-name-button {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+  padding: 1px 4px;
+}
+
+.agent-name-button:hover {
+  background: rgba(47, 125, 91, 0.1);
+  color: var(--accent);
 }
 
 .field,
@@ -356,11 +373,136 @@ select {
 .meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 7px;
   margin: 0 0 4px;
   color: var(--muted);
   font-size: 11px;
   font-weight: 800;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(20, 28, 24, 0.38);
+  padding: 18px;
+}
+
+.modal-backdrop[hidden] {
+  display: none;
+}
+
+.avatar-modal {
+  width: min(560px, 100%);
+  max-height: min(720px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 18px 50px rgba(20, 28, 24, 0.24);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.modal-header,
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--line);
+  justify-content: flex-end;
+}
+
+.modal-title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.modal-title-block p,
+.modal-title-block h2 {
+  margin: 0;
+}
+
+.modal-title-block p {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.modal-title-block h2 {
+  font-size: 18px;
+}
+
+.avatar-grid {
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.avatar-option {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 10px 8px;
+}
+
+.avatar-option:hover {
+  border-color: var(--accent);
+  background: #f8fff4;
+}
+
+.avatar-option img {
+  width: 58px;
+  height: 58px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 5px 14px var(--shadow);
+  object-fit: cover;
+}
+
+.avatar-option span {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 7px 12px;
+}
+
+.text-button:hover {
+  border-color: var(--accent);
+  background: #f8fff4;
 }
 
 .message-row.mine .meta {

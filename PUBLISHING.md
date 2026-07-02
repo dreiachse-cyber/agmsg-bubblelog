@@ -13,7 +13,7 @@ Use this before making the repository public.
 
 ## Metadata
 
-- [ ] Update `package.json` with the final `repository`, `homepage`, and `bugs` URLs.
+- [x] Update `package.json` with the final `repository`, `homepage`, and `bugs` URLs.
 - [ ] Confirm `README.md` describes the supported platform and setup.
 - [ ] Confirm `LICENSE`, `CONTRIBUTING.md`, `SECURITY.md`, `CHANGELOG.md`, and `ASSETS.md` are present.
 

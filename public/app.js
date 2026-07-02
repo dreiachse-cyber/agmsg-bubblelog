@@ -1,8 +1,14 @@
+const avatarOverridesKey = "agmsg-bubblelog-avatar-overrides";
+const avatarExpressionNames = ["thinking", "sad", "happy", "neutral", "calm", "talk"];
+
 const state = {
   teams: [],
   selectedTeam: "",
   entries: [],
   agentIcons: {},
+  avatarCatalog: [],
+  avatarOverrides: loadAvatarOverrides(),
+  avatarTargetAgent: "",
   showControls: false,
   compact: true,
   limit: 80,
@@ -26,6 +32,11 @@ const els = {
   messageList: document.querySelector("#messageList"),
   teamCaption: document.querySelector("#teamCaption"),
   chatTitle: document.querySelector("#chatTitle"),
+  avatarModal: document.querySelector("#avatarModal"),
+  avatarModalAgent: document.querySelector("#avatarModalAgent"),
+  avatarModalClose: document.querySelector("#avatarModalClose"),
+  avatarGrid: document.querySelector("#avatarGrid"),
+  avatarResetButton: document.querySelector("#avatarResetButton"),
 };
 
 const pollIntervalMs = 5000;
@@ -110,6 +121,18 @@ async function fetchJson(path) {
   return data;
 }
 
+function loadAvatarOverrides() {
+  try {
+    return JSON.parse(localStorage.getItem(avatarOverridesKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveAvatarOverrides() {
+  localStorage.setItem(avatarOverridesKey, JSON.stringify(state.avatarOverrides));
+}
+
 function setStatus(text) {
   els.statusLine.textContent = text;
 }
@@ -165,6 +188,16 @@ function normalizeIconConfig(value) {
   return typeof value === "string" ? { src: value } : value;
 }
 
+function avatarSetConfig(set) {
+  return {
+    label: set.label,
+    src: `./avatars/${set.key}-neutral.png`,
+    emotions: Object.fromEntries(
+      avatarExpressionNames.map((name) => [name, `./avatars/${set.key}-${name}.png`]),
+    ),
+  };
+}
+
 function resolveEmotionIcon(icon, emotionKey) {
   const emotions = icon?.emotions || {};
   const alias = emotionIconAliases[emotionKey] || emotionKey;
@@ -174,6 +207,9 @@ function resolveEmotionIcon(icon, emotionKey) {
 }
 
 function agentIconConfig(name, emotionKey = "neutral") {
+  const override = state.avatarOverrides[name];
+  if (override) return resolveEmotionIcon(normalizeIconConfig(override), emotionKey);
+
   const exact = state.agentIcons[name];
   if (exact) return resolveEmotionIcon(normalizeIconConfig(exact), emotionKey);
 
@@ -181,6 +217,16 @@ function agentIconConfig(name, emotionKey = "neutral") {
   const matched = Object.entries(state.agentIcons).find(([key]) => key.toLowerCase() === lowerName);
   if (!matched) return null;
   return resolveEmotionIcon(normalizeIconConfig(matched[1]), emotionKey);
+}
+
+function agentNameButton(agentName) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "agent-name-button";
+  button.dataset.agentName = agentName;
+  button.textContent = agentName;
+  button.title = `${agentName} の顔アイコンを選ぶ`;
+  return button;
 }
 
 function createAvatar(agentName, emotion) {
@@ -261,10 +307,12 @@ function renderTeams() {
   }
 
   for (const team of state.teams) {
-    const button = document.createElement("button");
-    button.type = "button";
+    const button = document.createElement("div");
+    button.role = "button";
+    button.tabIndex = 0;
     button.className = `team-button${team.name === state.selectedTeam ? " active" : ""}`;
     button.dataset.team = team.name;
+    button.setAttribute("aria-current", team.name === state.selectedTeam ? "true" : "false");
 
     const name = document.createElement("span");
     name.className = "team-name";
@@ -272,7 +320,15 @@ function renderTeams() {
 
     const agents = document.createElement("span");
     agents.className = "team-agents";
-    agents.textContent = (team.agents || []).map((agent) => agent.name).join(" / ") || "メンバー不明";
+    const members = team.agents || [];
+    if (members.length) {
+      members.forEach((agent, index) => {
+        if (index > 0) agents.append(" / ");
+        agents.appendChild(agentNameButton(agent.name));
+      });
+    } else {
+      agents.textContent = "メンバー不明";
+    }
 
     button.append(name, agents);
     els.teamList.appendChild(button);
@@ -334,7 +390,10 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    meta.textContent = `${entry.fromAgent} → ${entry.toAgent} · ${formatTime(entry.createdAt)} `;
+    meta.appendChild(agentNameButton(entry.fromAgent));
+    meta.append(" → ");
+    meta.appendChild(agentNameButton(entry.toAgent));
+    meta.append(` · ${formatTime(entry.createdAt)} `);
 
     const tag = document.createElement("span");
     tag.className = "emotion";
@@ -372,6 +431,81 @@ async function loadAgentIcons() {
   } catch {
     state.agentIcons = {};
   }
+
+  try {
+    const data = await fetchJson("/avatar-catalog.json");
+    state.avatarCatalog = data.sets || [];
+  } catch {
+    state.avatarCatalog = [];
+  }
+}
+
+function renderAvatarModal() {
+  els.avatarModalAgent.textContent = state.avatarTargetAgent || "agent";
+  els.avatarGrid.replaceChildren();
+
+  for (const set of state.avatarCatalog) {
+    const config = avatarSetConfig(set);
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "avatar-option";
+    option.dataset.avatarSet = set.key;
+    option.title = set.label;
+
+    const image = document.createElement("img");
+    image.src = config.src;
+    image.alt = set.label;
+    image.loading = "lazy";
+
+    const label = document.createElement("span");
+    label.textContent = set.label;
+
+    option.append(image, label);
+    els.avatarGrid.appendChild(option);
+  }
+}
+
+function openAvatarModal(agentName) {
+  state.avatarTargetAgent = agentName;
+  renderAvatarModal();
+  els.avatarModal.hidden = false;
+  els.avatarModalClose.focus();
+}
+
+function closeAvatarModal() {
+  els.avatarModal.hidden = true;
+  state.avatarTargetAgent = "";
+}
+
+function rerenderAfterAvatarChange() {
+  const keepBottom = isNearBottom();
+  renderTeams();
+  renderMessages({ scrollMode: keepBottom ? "bottom" : "preserve" });
+}
+
+function chooseAvatarSet(setKey) {
+  const set = state.avatarCatalog.find((item) => item.key === setKey);
+  if (!set || !state.avatarTargetAgent) return;
+  state.avatarOverrides[state.avatarTargetAgent] = avatarSetConfig(set);
+  saveAvatarOverrides();
+  closeAvatarModal();
+  rerenderAfterAvatarChange();
+}
+
+function resetAvatarSet() {
+  if (!state.avatarTargetAgent) return;
+  delete state.avatarOverrides[state.avatarTargetAgent];
+  saveAvatarOverrides();
+  closeAvatarModal();
+  rerenderAfterAvatarChange();
+}
+
+async function selectTeam(teamName) {
+  state.selectedTeam = teamName;
+  state.entries = [];
+  state.unreadCount = 0;
+  renderTeams();
+  await loadHistory();
 }
 
 async function loadTeams() {
@@ -457,13 +591,30 @@ async function refreshAll() {
 }
 
 els.teamList.addEventListener("click", async (event) => {
+  const agentButton = event.target.closest("[data-agent-name]");
+  if (agentButton) {
+    event.stopPropagation();
+    openAvatarModal(agentButton.dataset.agentName);
+    return;
+  }
+
   const button = event.target.closest("[data-team]");
   if (!button) return;
-  state.selectedTeam = button.dataset.team;
-  state.entries = [];
-  state.unreadCount = 0;
-  renderTeams();
-  await loadHistory();
+  await selectTeam(button.dataset.team);
+});
+els.teamList.addEventListener("keydown", async (event) => {
+  if (!["Enter", " "].includes(event.key)) return;
+  const agentButton = event.target.closest("[data-agent-name]");
+  if (agentButton) {
+    event.preventDefault();
+    openAvatarModal(agentButton.dataset.agentName);
+    return;
+  }
+
+  const button = event.target.closest("[data-team]");
+  if (!button) return;
+  event.preventDefault();
+  await selectTeam(button.dataset.team);
 });
 
 els.limitSelect.addEventListener("change", async () => {
@@ -495,6 +646,26 @@ els.messageList.addEventListener("scroll", () => {
   if (state.unreadCount > 0 && isNearBottom()) {
     state.unreadCount = 0;
     renderNewMessageButton();
+  }
+});
+els.messageList.addEventListener("click", (event) => {
+  const agentButton = event.target.closest("[data-agent-name]");
+  if (!agentButton) return;
+  openAvatarModal(agentButton.dataset.agentName);
+});
+els.avatarGrid.addEventListener("click", (event) => {
+  const option = event.target.closest("[data-avatar-set]");
+  if (!option) return;
+  chooseAvatarSet(option.dataset.avatarSet);
+});
+els.avatarResetButton.addEventListener("click", resetAvatarSet);
+els.avatarModalClose.addEventListener("click", closeAvatarModal);
+els.avatarModal.addEventListener("click", (event) => {
+  if (event.target === els.avatarModal) closeAvatarModal();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !els.avatarModal.hidden) {
+    closeAvatarModal();
   }
 });
 
