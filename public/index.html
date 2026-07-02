@@ -9,7 +9,7 @@
   </head>
   <body>
     <div class="app-shell">
-      <aside class="sidebar">
+      <aside id="sidebar" class="sidebar">
         <header class="brand">
           <p>ローカルagmsgビューア</p>
           <h1>Bubblelog</h1>
@@ -44,15 +44,26 @@
 
       <main class="chat-shell">
         <header class="chat-header">
-          <div>
+          <button
+            id="sidebarToggle"
+            class="icon-button"
+            type="button"
+            title="チーム欄を閉じる"
+            aria-controls="sidebar"
+            aria-expanded="true"
+          >☰</button>
+          <div class="title-block">
             <p id="teamCaption">チーム未選択</p>
             <h2 id="chatTitle">ログを選んでください</h2>
           </div>
-          <button id="refreshButton" type="button">更新</button>
+          <button id="refreshButton" class="icon-button" type="button" title="更新" aria-label="更新">↻</button>
         </header>
 
         <section id="statusLine" class="status-line">agmsg のチーム一覧を読み込み中です。</section>
-        <section id="messageList" class="message-list" aria-live="polite"></section>
+        <section class="message-area">
+          <section id="messageList" class="message-list" aria-live="polite"></section>
+          <button id="newMessageButton" class="new-message-button" type="button" hidden>↓ 新着</button>
+        </section>
       </main>
     </div>
 

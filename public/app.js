@@ -8,20 +8,27 @@ const state = {
   limit: 80,
   loadingTeams: false,
   loadingHistory: false,
+  sidebarCollapsed: localStorage.getItem("agmsg-bubblelog-sidebar") === "collapsed",
+  unreadCount: 0,
 };
 
 const els = {
   shell: document.querySelector(".app-shell"),
+  sidebar: document.querySelector("#sidebar"),
+  sidebarToggle: document.querySelector("#sidebarToggle"),
   teamList: document.querySelector("#teamList"),
   limitSelect: document.querySelector("#limitSelect"),
   compactToggle: document.querySelector("#compactToggle"),
   controlToggle: document.querySelector("#controlToggle"),
   refreshButton: document.querySelector("#refreshButton"),
+  newMessageButton: document.querySelector("#newMessageButton"),
   statusLine: document.querySelector("#statusLine"),
   messageList: document.querySelector("#messageList"),
   teamCaption: document.querySelector("#teamCaption"),
   chatTitle: document.querySelector("#chatTitle"),
 };
+
+const pollIntervalMs = 5000;
 
 const palette = [
   "#5f9e7b",
@@ -107,6 +114,42 @@ function setStatus(text) {
   els.statusLine.textContent = text;
 }
 
+function entryKey(entry) {
+  return [entry.createdAt, entry.fromAgent, entry.toAgent, entry.body].join("\u001f");
+}
+
+function countNewEntries(previousEntries, nextEntries) {
+  const previousKeys = new Set(previousEntries.map(entryKey));
+  return nextEntries.filter((entry) => !previousKeys.has(entryKey(entry))).length;
+}
+
+function isNearBottom() {
+  const distance = els.messageList.scrollHeight - els.messageList.scrollTop - els.messageList.clientHeight;
+  return distance < 72;
+}
+
+function renderNewMessageButton() {
+  if (state.unreadCount > 0) {
+    els.newMessageButton.hidden = false;
+    els.newMessageButton.textContent = `↓ 新着 ${state.unreadCount}件`;
+    return;
+  }
+  els.newMessageButton.hidden = true;
+}
+
+function scrollToLatest() {
+  els.messageList.scrollTop = els.messageList.scrollHeight;
+  state.unreadCount = 0;
+  renderNewMessageButton();
+}
+
+function applySidebarState() {
+  els.shell.classList.toggle("sidebar-collapsed", state.sidebarCollapsed);
+  els.sidebar.setAttribute("aria-hidden", String(state.sidebarCollapsed));
+  els.sidebarToggle.setAttribute("aria-expanded", String(!state.sidebarCollapsed));
+  els.sidebarToggle.title = state.sidebarCollapsed ? "チーム欄を開く" : "チーム欄を閉じる";
+}
+
 function selectedTeam() {
   return state.teams.find((team) => team.name === state.selectedTeam);
 }
@@ -173,7 +216,7 @@ function appendThinkingIndicator(agentName) {
   row.className = "message-row thinking other";
   row.setAttribute("aria-label", `${agentName} が考え中`);
 
-  const avatar = createAvatar(agentName, { icon: "…", label: "考え中" });
+  const avatar = createAvatar(agentName, { key: "thinking", icon: "…", label: "考え中" });
 
   const wrap = document.createElement("div");
   wrap.className = "bubble-wrap";
@@ -236,7 +279,7 @@ function renderTeams() {
   }
 }
 
-function renderMessages() {
+function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messageList.scrollTop } = {}) {
   els.shell.classList.toggle("compact", state.compact);
   els.shell.classList.toggle("loading", state.loadingTeams || state.loadingHistory);
   els.messageList.setAttribute("aria-busy", state.loadingHistory ? "true" : "false");
@@ -255,6 +298,7 @@ function renderMessages() {
       ? "表示できるメッセージがありません。"
       : "左のチームを選んでください。";
     els.messageList.appendChild(empty);
+    renderNewMessageButton();
     return;
   }
 
@@ -310,7 +354,15 @@ function renderMessages() {
     appendThinkingIndicator(thinkingAgentName(visibleEntries));
   }
 
-  els.messageList.scrollTop = els.messageList.scrollHeight;
+  if (scrollMode === "bottom") {
+    els.messageList.scrollTop = els.messageList.scrollHeight;
+  } else if (scrollMode === "preserve") {
+    els.messageList.scrollTop = Math.min(
+      previousScrollTop,
+      Math.max(0, els.messageList.scrollHeight - els.messageList.clientHeight),
+    );
+  }
+  renderNewMessageButton();
 }
 
 async function loadAgentIcons() {
@@ -337,21 +389,58 @@ async function loadTeams() {
   renderTeams();
 }
 
-async function loadHistory() {
+async function loadHistory({ silent = false } = {}) {
   if (!state.selectedTeam) {
     renderMessages();
     return;
   }
-  state.loadingHistory = true;
-  renderMessages();
-  setStatus(`${state.selectedTeam} の履歴を読み込み中です。`);
-  const data = await fetchJson(
-    `/api/history?team=${encodeURIComponent(state.selectedTeam)}&limit=${state.limit}`,
-  );
-  state.entries = data.entries || [];
-  state.loadingHistory = false;
-  setStatus(`${state.entries.length} 件を表示中。すべてローカルで読み込んでいます。`);
-  renderMessages();
+  const previousEntries = state.entries;
+  const hadEntries = previousEntries.length > 0;
+  const wasAtBottom = isNearBottom();
+  const previousScrollTop = els.messageList.scrollTop;
+
+  if (!silent) {
+    state.loadingHistory = true;
+    renderMessages({
+      scrollMode: wasAtBottom ? "bottom" : "preserve",
+      previousScrollTop,
+    });
+    setStatus(`${state.selectedTeam} の履歴を読み込み中です。`);
+  }
+
+  try {
+    const data = await fetchJson(
+      `/api/history?team=${encodeURIComponent(state.selectedTeam)}&limit=${state.limit}`,
+    );
+    const nextEntries = data.entries || [];
+    const newCount = hadEntries ? countNewEntries(previousEntries, nextEntries) : 0;
+    const shouldFollowLatest = !hadEntries || wasAtBottom;
+
+    state.entries = nextEntries;
+    state.loadingHistory = false;
+
+    if (newCount > 0 && !shouldFollowLatest) {
+      state.unreadCount += newCount;
+      setStatus(`${newCount} 件の新着メッセージがあります。`);
+    } else {
+      if (shouldFollowLatest) state.unreadCount = 0;
+      if (!silent || newCount > 0) {
+        setStatus(`${state.entries.length} 件を表示中。すべてローカルで読み込んでいます。`);
+      }
+    }
+
+    renderMessages({
+      scrollMode: shouldFollowLatest ? "bottom" : "preserve",
+      previousScrollTop,
+    });
+  } catch (error) {
+    state.loadingHistory = false;
+    renderMessages({
+      scrollMode: wasAtBottom ? "bottom" : "preserve",
+      previousScrollTop,
+    });
+    throw error;
+  }
 }
 
 async function refreshAll() {
@@ -371,6 +460,8 @@ els.teamList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-team]");
   if (!button) return;
   state.selectedTeam = button.dataset.team;
+  state.entries = [];
+  state.unreadCount = 0;
   renderTeams();
   await loadHistory();
 });
@@ -382,14 +473,37 @@ els.limitSelect.addEventListener("change", async () => {
 
 els.compactToggle.addEventListener("change", () => {
   state.compact = els.compactToggle.checked;
-  renderMessages();
+  renderMessages({ scrollMode: isNearBottom() ? "bottom" : "preserve" });
 });
 
 els.controlToggle.addEventListener("change", () => {
   state.showControls = els.controlToggle.checked;
-  renderMessages();
+  renderMessages({ scrollMode: isNearBottom() ? "bottom" : "preserve" });
 });
 
 els.refreshButton.addEventListener("click", refreshAll);
+els.sidebarToggle.addEventListener("click", () => {
+  state.sidebarCollapsed = !state.sidebarCollapsed;
+  localStorage.setItem(
+    "agmsg-bubblelog-sidebar",
+    state.sidebarCollapsed ? "collapsed" : "expanded",
+  );
+  applySidebarState();
+});
+els.newMessageButton.addEventListener("click", scrollToLatest);
+els.messageList.addEventListener("scroll", () => {
+  if (state.unreadCount > 0 && isNearBottom()) {
+    state.unreadCount = 0;
+    renderNewMessageButton();
+  }
+});
 
+setInterval(() => {
+  if (state.loadingTeams || state.loadingHistory || !state.selectedTeam) return;
+  loadHistory({ silent: true }).catch((error) => {
+    setStatus(`自動更新に失敗しました: ${error.message}`);
+  });
+}, pollIntervalMs);
+
+applySidebarState();
 refreshAll();
