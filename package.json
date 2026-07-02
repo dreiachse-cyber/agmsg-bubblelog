@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "node server.mjs",
-    "check": "node --check server.mjs && node --check public/app.js"
+    "check": "node --check server.mjs && node --check public/app.js",
+    "test": "npm run check"
   },
   "keywords": [
     "agmsg",
@@ -19,5 +20,18 @@
   "license": "MIT",
   "engines": {
     "node": ">=20"
+  },
+  "files": [
+    "server.mjs",
+    "public",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "ASSETS.md"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

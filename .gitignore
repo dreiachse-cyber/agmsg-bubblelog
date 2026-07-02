@@ -3,3 +3,19 @@ node_modules/
 .DS_Store
 *.log
 dist/
+.local/
+
+# Local project-ops files. These are for this workspace, not for the public OSS repo.
+AGENTS.md
+slot-situation.md
+request-status.md
+docs/作業指示書/
+docs/作業履歴/
+docs/仕様書/
+docs/運用/
+slot0/
+slot1/
+slot2/
+slot3/
+slot4/
+slot5/
