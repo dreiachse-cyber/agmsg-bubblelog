@@ -302,14 +302,14 @@ select {
 
 .message-row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 560px);
-  gap: 8px;
+  grid-template-columns: 78px minmax(0, 560px);
+  gap: 10px;
   align-items: end;
   margin: 11px 0;
 }
 
 .message-row.mine {
-  grid-template-columns: minmax(0, 560px) 42px;
+  grid-template-columns: minmax(0, 560px) 78px;
   justify-content: end;
 }
 
@@ -323,8 +323,8 @@ select {
 }
 
 .avatar {
-  width: 38px;
-  height: 38px;
+  width: 72px;
+  height: 72px;
   border: 2px solid #fff;
   border-radius: 50%;
   background: var(--avatar-color, #9fc9b5);
@@ -332,25 +332,9 @@ select {
   display: grid;
   place-items: center;
   color: #fff;
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 900;
   position: relative;
-}
-
-.avatar::after {
-  content: attr(data-emotion);
-  position: absolute;
-  right: -5px;
-  bottom: -5px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #fff5d7;
-  color: #6b5a21;
-  font-size: 11px;
 }
 
 .avatar.has-image {
@@ -516,6 +500,7 @@ select {
 }
 
 .bubble {
+  position: relative;
   max-width: min(560px, 72vw);
   border: 1px solid rgba(43, 64, 52, 0.08);
   border-radius: 16px;
@@ -525,6 +510,29 @@ select {
   padding: 10px 13px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.bubble-status {
+  position: absolute;
+  right: -7px;
+  bottom: -8px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #fff5d7;
+  box-shadow: 0 4px 10px var(--shadow);
+  color: #6b5a21;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.message-row.mine .bubble-status {
+  right: auto;
+  left: -7px;
 }
 
 .message-row.mine .bubble {
@@ -543,11 +551,6 @@ select {
   animation: avatar-thinking 1.8s ease-in-out infinite;
 }
 
-.message-row.thinking .avatar::after {
-  background: #e8f2ff;
-  color: #32638e;
-}
-
 .thinking-label {
   background: #e8f2ff;
   color: #32638e;
@@ -559,6 +562,11 @@ select {
   gap: 10px;
   width: auto;
   color: var(--muted);
+}
+
+.thinking-bubble .bubble-status {
+  background: #e8f2ff;
+  color: #32638e;
 }
 
 .thinking-loader {
@@ -595,18 +603,18 @@ select {
 }
 
 .app-shell.compact .message-row {
-  grid-template-columns: 34px minmax(0, 560px);
+  grid-template-columns: 62px minmax(0, 560px);
   margin: 7px 0;
 }
 
 .app-shell.compact .message-row.mine {
-  grid-template-columns: minmax(0, 560px) 34px;
+  grid-template-columns: minmax(0, 560px) 62px;
 }
 
 .app-shell.compact .avatar {
-  width: 30px;
-  height: 30px;
-  font-size: 14px;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
 }
 
 .app-shell.compact .bubble {

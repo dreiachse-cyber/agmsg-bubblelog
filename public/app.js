@@ -233,7 +233,6 @@ function createAvatar(agentName, emotion) {
   const avatar = document.createElement("div");
   avatar.className = "avatar";
   avatar.style.setProperty("--avatar-color", avatarColor(agentName));
-  avatar.dataset.emotion = emotion.icon;
   avatar.title = `${agentName} / ${emotion.label}`;
 
   const icon = agentIconConfig(agentName, emotion.key);
@@ -290,7 +289,12 @@ function appendThinkingIndicator(agentName) {
   text.className = "thinking-text";
   text.textContent = "応答を待っています";
 
-  bubble.append(loader, text);
+  const badge = document.createElement("span");
+  badge.className = "bubble-status";
+  badge.textContent = "…";
+  badge.title = "考え中";
+
+  bubble.append(loader, text, badge);
   wrap.append(meta, bubble);
   row.append(avatar, wrap);
   els.messageList.appendChild(row);
@@ -403,6 +407,12 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
     const bubble = document.createElement("div");
     bubble.className = "bubble";
     bubble.textContent = entry.body;
+
+    const badge = document.createElement("span");
+    badge.className = "bubble-status";
+    badge.textContent = emotion.icon;
+    badge.title = emotion.label;
+    bubble.appendChild(badge);
 
     wrap.append(meta, bubble);
     row.append(avatar, wrap);
