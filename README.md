@@ -71,6 +71,30 @@ C:\Program Files\Git\bin\bash.exe
 
 未設定のエージェントは、これまで通り名前の頭文字アイコンで表示します。
 
+表情差分を使う場合は `emotions` を指定します。
+
+```json
+{
+  "agents": {
+    "codex-impl": {
+      "src": "./avatars/dog-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/dog-thinking.png",
+        "sad": "./avatars/dog-sad.png",
+        "happy": "./avatars/dog-happy.png",
+        "neutral": "./avatars/dog-neutral.png",
+        "calm": "./avatars/dog-calm.png",
+        "talk": "./avatars/dog-talk.png"
+      }
+    }
+  }
+}
+```
+
+`要注意` と `警戒` は `sad`、`質問` と考え中表示は `thinking`、`完了` は `happy`、`レビュー` と `待機` は `calm` に寄せて表示します。
+
+同梱の切り出し済みアイコンは `bear`、`dog`、`frog`、`gray-koala`、`lion`、`lowpoly-lion`、`panda`、`pig`、`rabbit`、`white-koala` の10種類です。
+
 ## しないこと
 
 - agmsg メッセージ送信はしない。

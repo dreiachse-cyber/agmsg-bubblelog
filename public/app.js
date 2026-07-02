@@ -43,6 +43,17 @@ const emotionRules = [
   { key: "waiting", label: "待機", icon: "•", className: "waiting", words: ["待機", "見て", "お願いします", "依頼", "ready"] },
 ];
 
+const emotionIconAliases = {
+  error: "sad",
+  warn: "sad",
+  question: "thinking",
+  good: "happy",
+  review: "calm",
+  waiting: "calm",
+  neutral: "neutral",
+  thinking: "thinking",
+};
+
 function hashText(text) {
   let hash = 2166136261;
   for (const char of text) {
@@ -106,14 +117,27 @@ function thinkingAgentName(visibleEntries) {
   return selectedTeam()?.agents?.[0]?.name || "AI";
 }
 
-function agentIconConfig(name) {
+function normalizeIconConfig(value) {
+  if (!value) return null;
+  return typeof value === "string" ? { src: value } : value;
+}
+
+function resolveEmotionIcon(icon, emotionKey) {
+  const emotions = icon?.emotions || {};
+  const alias = emotionIconAliases[emotionKey] || emotionKey;
+  const match = emotions[emotionKey] || emotions[alias];
+  if (!match) return icon;
+  return { ...icon, ...normalizeIconConfig(match) };
+}
+
+function agentIconConfig(name, emotionKey = "neutral") {
   const exact = state.agentIcons[name];
-  if (exact) return typeof exact === "string" ? { src: exact } : exact;
+  if (exact) return resolveEmotionIcon(normalizeIconConfig(exact), emotionKey);
 
   const lowerName = name.toLowerCase();
   const matched = Object.entries(state.agentIcons).find(([key]) => key.toLowerCase() === lowerName);
   if (!matched) return null;
-  return typeof matched[1] === "string" ? { src: matched[1] } : matched[1];
+  return resolveEmotionIcon(normalizeIconConfig(matched[1]), emotionKey);
 }
 
 function createAvatar(agentName, emotion) {
@@ -123,7 +147,7 @@ function createAvatar(agentName, emotion) {
   avatar.dataset.emotion = emotion.icon;
   avatar.title = `${agentName} / ${emotion.label}`;
 
-  const icon = agentIconConfig(agentName);
+  const icon = agentIconConfig(agentName, emotion.key);
   const src = icon?.src || icon?.icon;
   if (src) {
     const image = document.createElement("img");

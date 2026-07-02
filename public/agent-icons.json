@@ -1,3 +1,28 @@
 {
-  "agents": {}
+  "agents": {
+    "codex-impl": {
+      "label": "Codex",
+      "src": "./avatars/dog-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/dog-thinking.png",
+        "sad": "./avatars/dog-sad.png",
+        "happy": "./avatars/dog-happy.png",
+        "neutral": "./avatars/dog-neutral.png",
+        "calm": "./avatars/dog-calm.png",
+        "talk": "./avatars/dog-talk.png"
+      }
+    },
+    "claude-review": {
+      "label": "Claude",
+      "src": "./avatars/panda-neutral.png",
+      "emotions": {
+        "thinking": "./avatars/panda-thinking.png",
+        "sad": "./avatars/panda-sad.png",
+        "happy": "./avatars/panda-happy.png",
+        "neutral": "./avatars/panda-neutral.png",
+        "calm": "./avatars/panda-calm.png",
+        "talk": "./avatars/panda-talk.png"
+      }
+    }
+  }
 }
