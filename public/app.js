@@ -450,7 +450,7 @@ function renderTeams() {
   if (!state.teams.length) {
     const empty = document.createElement("p");
     empty.className = "team-agents";
-    empty.textContent = "agmsg チームが見つかりません。";
+    empty.textContent = "ローカルチームが見つかりません。";
     els.teamList.appendChild(empty);
     return;
   }
@@ -495,7 +495,7 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
     els.chatTitle.textContent = "撮影用デモログ";
   } else {
     els.teamCaption.textContent = state.selectedTeam ? `チーム: ${state.selectedTeam}` : "チーム未選択";
-    els.chatTitle.textContent = state.selectedTeam ? "agmsg 会話ログ" : "ログを選んでください";
+    els.chatTitle.textContent = state.selectedTeam ? "会話ログ" : "ログを選んでください";
   }
 
   const visibleEntries = state.entries.filter(
@@ -680,7 +680,7 @@ async function loadTeams() {
 
   state.loadingTeams = true;
   renderMessages();
-  setStatus("agmsg チームを読み込み中です。");
+  setStatus("ローカルチームを読み込み中です。");
   const data = await fetchJson("/api/teams");
   state.teams = data.teams || [];
   if (!state.selectedTeam && state.teams.length) {
@@ -733,7 +733,7 @@ async function loadHistory({ silent = false } = {}) {
     } else {
       if (shouldFollowLatest) state.unreadCount = 0;
       if (!silent || newCount > 0) {
-        setStatus(`${state.entries.length} 件を表示中。すべてローカルで読み込んでいます。`);
+        setStatus(`${state.entries.length} 件を表示中。ローカルで読み込んでいます。`);
       }
     }
 

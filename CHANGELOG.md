@@ -13,3 +13,4 @@
 - Added third-party notices for MIT-licensed agmsg portions.
 - Documented external agent billing responsibility and usage-credit checks.
 - Added README demo media with a GIF preview and MP4 source.
+- Renamed visible app copy to Bubblelog-focused wording.
