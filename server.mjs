@@ -124,41 +124,92 @@ function selectProjectTeams(teams) {
   return matching.length ? matching : teams;
 }
 
+// busyTimeoutMs makes read connections wait for the agmsg watcher's write
+// locks (WAL checkpoints) instead of failing immediately with SQLITE_BUSY.
+const busyTimeoutMs = Number(process.env.AGMSG_BUSY_TIMEOUT_MS || 2000);
+const busyRetryCount = 3;
+
 function openMessageDb() {
   if (!existsSync(dbPath)) return null;
-  return new DatabaseSync(dbPath, { readOnly: true });
+  return new DatabaseSync(dbPath, { readOnly: true, timeout: busyTimeoutMs });
 }
 
-function readHistory(team, limit) {
-  validateTeamName(team);
-  const db = openMessageDb();
-  if (!db) return [];
+function isBusyError(error) {
+  return /database is locked|SQLITE_BUSY/i.test(error?.message || "");
+}
 
-  try {
-    const rows = db
-      .prepare(
-        `SELECT
-           rowid AS id,
-           team,
-           from_agent AS fromAgent,
-           to_agent AS toAgent,
-           body,
-           created_at AS createdAt,
-           CASE WHEN read_at IS NULL THEN 0 ELSE 1 END AS read
-         FROM messages
-         WHERE team = ?
-         ORDER BY created_at DESC
-         LIMIT ?`,
-      )
-      .all(team, limit);
-
-    return rows.reverse().map((row) => ({
-      ...row,
-      read: Boolean(row.read),
-    }));
-  } finally {
-    db.close();
+function withMessageDb(fn) {
+  let lastError = null;
+  for (let attempt = 0; attempt < busyRetryCount; attempt += 1) {
+    let db = null;
+    try {
+      db = openMessageDb();
+      if (!db) return null;
+      return fn(db);
+    } catch (error) {
+      lastError = error;
+      if (!isBusyError(error)) throw error;
+    } finally {
+      db?.close();
+    }
   }
+  throw lastError;
+}
+
+function readHistory(team, limit, pair) {
+  validateTeamName(team);
+  const conditions = ["team = ?"];
+  const params = [team];
+  if (pair) {
+    conditions.push("((from_agent = ? AND to_agent = ?) OR (from_agent = ? AND to_agent = ?))");
+    params.push(pair.a, pair.b, pair.b, pair.a);
+  }
+
+  const rows =
+    withMessageDb((db) =>
+      db
+        .prepare(
+          `SELECT
+             rowid AS id,
+             team,
+             from_agent AS fromAgent,
+             to_agent AS toAgent,
+             body,
+             created_at AS createdAt,
+             CASE WHEN read_at IS NULL THEN 0 ELSE 1 END AS read
+           FROM messages
+           WHERE ${conditions.join(" AND ")}
+           ORDER BY created_at DESC
+           LIMIT ?`,
+        )
+        .all(...params, limit),
+    ) || [];
+
+  return rows.reverse().map((row) => ({
+    ...row,
+    read: Boolean(row.read),
+  }));
+}
+
+function readPairs(team) {
+  validateTeamName(team);
+  return (
+    withMessageDb((db) =>
+      db
+        .prepare(
+          `SELECT
+             CASE WHEN from_agent <= to_agent THEN from_agent ELSE to_agent END AS agentA,
+             CASE WHEN from_agent <= to_agent THEN to_agent ELSE from_agent END AS agentB,
+             COUNT(*) AS count,
+             MAX(created_at) AS lastAt
+           FROM messages
+           WHERE team = ?
+           GROUP BY agentA, agentB
+           ORDER BY lastAt DESC`,
+        )
+        .all(team),
+    ) || []
+  );
 }
 
 async function handleApi(req, res, url) {
@@ -189,8 +240,22 @@ async function handleApi(req, res, url) {
         return;
       }
       const limit = Math.max(1, Math.min(300, Number(url.searchParams.get("limit") || 120)));
-      const entries = readHistory(team, limit);
+      const pairA = url.searchParams.get("a");
+      const pairB = url.searchParams.get("b");
+      const pair = pairA && pairB ? { a: pairA, b: pairB } : null;
+      const entries = readHistory(team, limit, pair);
       sendJson(res, 200, { source: "embedded-agmsg", team, entries });
+      return;
+    }
+
+    if (url.pathname === "/api/pairs") {
+      const team = url.searchParams.get("team");
+      if (!team) {
+        sendJson(res, 400, { error: "team is required" });
+        return;
+      }
+      const pairs = readPairs(team);
+      sendJson(res, 200, { source: "embedded-agmsg", team, pairs });
       return;
     }
 
