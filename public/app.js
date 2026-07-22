@@ -69,6 +69,8 @@ const uiCopy = {
     brandSubtitle: "Local conversation log viewer",
     teamPanelTitle: "Teams",
     displayPanelTitle: "View",
+    threadPanelTitle: "Threads",
+    allThreads: "All",
     language: "Language",
     limit: "Messages",
     compactView: "Compact view",
@@ -117,6 +119,8 @@ const uiCopy = {
     brandSubtitle: "ローカル会話ログビューア",
     teamPanelTitle: "チーム",
     displayPanelTitle: "表示",
+    threadPanelTitle: "スレッド",
+    allThreads: "すべて",
     language: "言語",
     limit: "件数",
     compactView: "コンパクト表示",
@@ -165,6 +169,8 @@ const uiCopy = {
     brandSubtitle: "本地会话日志查看器",
     teamPanelTitle: "团队",
     displayPanelTitle: "显示",
+    threadPanelTitle: "会话对",
+    allThreads: "全部",
     language: "语言",
     limit: "消息数",
     compactView: "紧凑显示",
@@ -213,6 +219,8 @@ const uiCopy = {
     brandSubtitle: "本機對話紀錄檢視器",
     teamPanelTitle: "團隊",
     displayPanelTitle: "顯示",
+    threadPanelTitle: "對話串",
+    allThreads: "全部",
     language: "語言",
     limit: "訊息數",
     compactView: "緊湊顯示",
@@ -261,6 +269,8 @@ const uiCopy = {
     brandSubtitle: "로컬 대화 로그 뷰어",
     teamPanelTitle: "팀",
     displayPanelTitle: "보기",
+    threadPanelTitle: "스레드",
+    allThreads: "전체",
     language: "언어",
     limit: "메시지 수",
     compactView: "컴팩트 보기",
@@ -309,6 +319,8 @@ const uiCopy = {
     brandSubtitle: "Локальный просмотр журнала диалогов",
     teamPanelTitle: "Команды",
     displayPanelTitle: "Вид",
+    threadPanelTitle: "Треды",
+    allThreads: "Все",
     language: "Язык",
     limit: "Сообщения",
     compactView: "Компактный вид",
@@ -357,6 +369,8 @@ const uiCopy = {
     brandSubtitle: "Visor local de registros de conversación",
     teamPanelTitle: "Equipos",
     displayPanelTitle: "Vista",
+    threadPanelTitle: "Hilos",
+    allThreads: "Todos",
     language: "Idioma",
     limit: "Mensajes",
     compactView: "Vista compacta",
@@ -405,6 +419,8 @@ const uiCopy = {
     brandSubtitle: "Visualizador local de logs de conversa",
     teamPanelTitle: "Equipes",
     displayPanelTitle: "Visualização",
+    threadPanelTitle: "Tópicos",
+    allThreads: "Todos",
     language: "Idioma",
     limit: "Mensagens",
     compactView: "Visualização compacta",
@@ -453,6 +469,8 @@ const uiCopy = {
     brandSubtitle: "Lokaler Viewer für Gesprächslogs",
     teamPanelTitle: "Teams",
     displayPanelTitle: "Ansicht",
+    threadPanelTitle: "Threads",
+    allThreads: "Alle",
     language: "Sprache",
     limit: "Nachrichten",
     compactView: "Kompaktansicht",
@@ -501,6 +519,8 @@ const uiCopy = {
     brandSubtitle: "Visionneuse locale de journaux de conversation",
     teamPanelTitle: "Équipes",
     displayPanelTitle: "Affichage",
+    threadPanelTitle: "Fils",
+    allThreads: "Tous",
     language: "Langue",
     limit: "Messages",
     compactView: "Affichage compact",
@@ -549,6 +569,8 @@ const uiCopy = {
     brandSubtitle: "Penampil log percakapan lokal",
     teamPanelTitle: "Tim",
     displayPanelTitle: "Tampilan",
+    threadPanelTitle: "Utas",
+    allThreads: "Semua",
     language: "Bahasa",
     limit: "Pesan",
     compactView: "Tampilan ringkas",
@@ -597,6 +619,8 @@ const uiCopy = {
     brandSubtitle: "Yerel konuşma günlüğü görüntüleyici",
     teamPanelTitle: "Takımlar",
     displayPanelTitle: "Görünüm",
+    threadPanelTitle: "Konular",
+    allThreads: "Tümü",
     language: "Dil",
     limit: "Mesajlar",
     compactView: "Kompakt görünüm",
@@ -645,6 +669,8 @@ const uiCopy = {
     brandSubtitle: "Trình xem nhật ký hội thoại cục bộ",
     teamPanelTitle: "Nhóm",
     displayPanelTitle: "Hiển thị",
+    threadPanelTitle: "Luồng",
+    allThreads: "Tất cả",
     language: "Ngôn ngữ",
     limit: "Tin nhắn",
     compactView: "Hiển thị gọn",
@@ -693,6 +719,8 @@ const uiCopy = {
     brandSubtitle: "Lokalna przeglądarka logów rozmów",
     teamPanelTitle: "Zespoły",
     displayPanelTitle: "Widok",
+    threadPanelTitle: "Wątki",
+    allThreads: "Wszystkie",
     language: "Język",
     limit: "Wiadomości",
     compactView: "Widok kompaktowy",
@@ -741,6 +769,8 @@ const uiCopy = {
     brandSubtitle: "Visualizzatore locale dei log di conversazione",
     teamPanelTitle: "Team",
     displayPanelTitle: "Vista",
+    threadPanelTitle: "Thread",
+    allThreads: "Tutti",
     language: "Lingua",
     limit: "Messaggi",
     compactView: "Vista compatta",
@@ -842,6 +872,8 @@ const state = {
   language: loadLanguage(),
   teams: [],
   selectedTeam: "",
+  pairs: [],
+  pairFilter: null,
   entries: [],
   agentIcons: {},
   avatarCatalog: [],
@@ -868,6 +900,9 @@ const els = {
   languageLabel: document.querySelector("#languageLabel"),
   languageSelect: document.querySelector("#languageSelect"),
   teamList: document.querySelector("#teamList"),
+  threadPanel: document.querySelector("#threadPanel"),
+  threadPanelTitle: document.querySelector("#threadPanelTitle"),
+  threadList: document.querySelector("#threadList"),
   limitLabel: document.querySelector("#limitLabel"),
   limitSelect: document.querySelector("#limitSelect"),
   compactLabel: document.querySelector("#compactLabel"),
@@ -1074,6 +1109,7 @@ function applyStaticCopy() {
   els.brandSubtitle.textContent = t("brandSubtitle");
   els.teamPanelTitle.textContent = t("teamPanelTitle");
   els.displayPanelTitle.textContent = t("displayPanelTitle");
+  els.threadPanelTitle.textContent = t("threadPanelTitle");
   els.languageLabel.textContent = t("language");
   els.limitLabel.textContent = t("limit");
   els.compactLabel.textContent = t("compactView");
@@ -1392,6 +1428,75 @@ function renderTeams() {
   }
 }
 
+function pairKey(pair) {
+  return `${pair.agentA}${pair.agentB}`;
+}
+
+function isActivePair(pair) {
+  return Boolean(
+    state.pairFilter &&
+      state.pairFilter.agentA === pair.agentA &&
+      state.pairFilter.agentB === pair.agentB,
+  );
+}
+
+function renderThreads() {
+  const hasThreads = !isDemoMode && state.selectedTeam && state.pairs.length > 0;
+  els.threadPanel.hidden = !hasThreads;
+  els.threadList.replaceChildren();
+  if (!hasThreads) return;
+
+  const makeButton = (label, count, active, dataset) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `thread-button${active ? " active" : ""}`;
+    Object.assign(button.dataset, dataset);
+    button.setAttribute("aria-pressed", String(active));
+
+    const pairLabel = document.createElement("span");
+    pairLabel.className = "thread-pair";
+    pairLabel.textContent = label;
+    button.appendChild(pairLabel);
+
+    if (count != null) {
+      const countLabel = document.createElement("span");
+      countLabel.className = "thread-count";
+      countLabel.textContent = String(count);
+      button.appendChild(countLabel);
+    }
+    return button;
+  };
+
+  els.threadList.appendChild(
+    makeButton(t("allThreads"), null, !state.pairFilter, { threadAll: "1" }),
+  );
+  for (const pair of state.pairs) {
+    els.threadList.appendChild(
+      makeButton(`${pair.agentA} ⇄ ${pair.agentB}`, pair.count, isActivePair(pair), {
+        threadA: pair.agentA,
+        threadB: pair.agentB,
+      }),
+    );
+  }
+}
+
+async function loadPairs() {
+  if (isDemoMode || !state.selectedTeam) return;
+  const previousPairs = JSON.stringify(state.pairs);
+  try {
+    const data = await fetchJson(`/api/pairs?team=${encodeURIComponent(state.selectedTeam)}`);
+    state.pairs = data.pairs || [];
+  } catch {
+    state.pairs = [];
+  }
+  if (state.pairFilter && !state.pairs.some((pair) => isActivePair(pair))) {
+    state.pairFilter = null;
+  }
+  // Polling calls this every few seconds; skip the re-render (which drops
+  // in-flight clicks) unless the pair list actually changed.
+  if (JSON.stringify(state.pairs) !== previousPairs) renderThreads();
+}
+
 function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messageList.scrollTop } = {}) {
   els.shell.classList.toggle("compact", state.compact);
   els.shell.classList.toggle("demo-mode", isDemoMode);
@@ -1402,8 +1507,11 @@ function renderMessages({ scrollMode = "preserve", previousScrollTop = els.messa
     els.teamCaption.textContent = t("demoCaption", { team: state.selectedTeam || demoTeamName });
     els.chatTitle.textContent = t("demoTitle");
   } else {
+    const pairSuffix = state.pairFilter
+      ? ` · ${state.pairFilter.agentA} ⇄ ${state.pairFilter.agentB}`
+      : "";
     els.teamCaption.textContent = state.selectedTeam
-      ? `${t("teamPanelTitle")}: ${state.selectedTeam}`
+      ? `${t("teamPanelTitle")}: ${state.selectedTeam}${pairSuffix}`
       : t("teamNotSelected");
     els.chatTitle.textContent = state.selectedTeam ? t("chatLog") : t("chooseLog");
   }
@@ -1572,6 +1680,7 @@ function changeLanguage(language) {
   saveLanguage();
   applyStaticCopy();
   renderTeams();
+  renderThreads();
   renderMessages({ scrollMode: isNearBottom() ? "bottom" : "preserve" });
   refreshLocalizedStatus();
 }
@@ -1580,7 +1689,18 @@ async function selectTeam(teamName) {
   state.selectedTeam = teamName;
   state.entries = [];
   state.unreadCount = 0;
+  state.pairs = [];
+  state.pairFilter = null;
   renderTeams();
+  renderThreads();
+  await Promise.all([loadPairs(), loadHistory()]);
+}
+
+async function selectPair(pairFilter) {
+  state.pairFilter = pairFilter;
+  state.entries = [];
+  state.unreadCount = 0;
+  renderThreads();
   await loadHistory();
 }
 
@@ -1632,8 +1752,11 @@ async function loadHistory({ silent = false } = {}) {
   }
 
   try {
+    const pairParams = state.pairFilter
+      ? `&a=${encodeURIComponent(state.pairFilter.agentA)}&b=${encodeURIComponent(state.pairFilter.agentB)}`
+      : "";
     const data = await fetchJson(
-      `/api/history?team=${encodeURIComponent(state.selectedTeam)}&limit=${state.limit}`,
+      `/api/history?team=${encodeURIComponent(state.selectedTeam)}&limit=${state.limit}${pairParams}`,
     );
     const nextEntries = data.entries || [];
     const newCount = hadEntries ? countNewEntries(previousEntries, nextEntries) : 0;
@@ -1674,7 +1797,7 @@ async function refreshAll() {
       return;
     }
     await loadTeams();
-    await loadHistory();
+    await Promise.all([loadPairs(), loadHistory()]);
   } catch (error) {
     state.loadingTeams = false;
     state.loadingHistory = false;
@@ -1766,9 +1889,20 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+els.threadList.addEventListener("click", async (event) => {
+  const button = event.target.closest(".thread-button");
+  if (!button) return;
+  if (button.dataset.threadAll) {
+    await selectPair(null);
+    return;
+  }
+  await selectPair({ agentA: button.dataset.threadA, agentB: button.dataset.threadB });
+});
+
 setInterval(() => {
   if (isDemoMode) return;
   if (state.loadingTeams || state.loadingHistory || !state.selectedTeam) return;
+  loadPairs();
   loadHistory({ silent: true }).catch((error) => {
     setStatus(t("autoUpdateFailed", { message: error.message }));
   });

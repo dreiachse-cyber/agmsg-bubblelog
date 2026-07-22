@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Opened the message DB with a busy timeout (`AGMSG_BUSY_TIMEOUT_MS`, default 2000ms) and busy retries so auto-refresh no longer fails with "database is locked" while the agmsg watcher is writing.
+- Added a pair thread view: the sidebar lists agent pairs (e.g. Dove ⇄ Crow) with message counts, and selecting one filters the log to that pair's conversation in both directions.
+- Added a `/api/pairs` endpoint and optional `a`/`b` pair parameters on `/api/history`.
+- Documented spawn-based agent startup and pair-thread usage tips in the README.
+
 ## 0.1.0 - 2026-07-02
 
 - Initial local agmsg messenger-style viewer.

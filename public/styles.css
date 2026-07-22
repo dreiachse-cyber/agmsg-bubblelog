@@ -137,6 +137,46 @@ select {
   text-overflow: ellipsis;
 }
 
+.thread-list {
+  display: grid;
+  gap: 6px;
+}
+
+.thread-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.thread-button.active {
+  border-color: var(--accent);
+  background: #e3f3dc;
+}
+
+.thread-pair {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-count {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .agent-name-button {
   border: 0;
   border-radius: 999px;
